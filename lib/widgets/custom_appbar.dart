@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:smart_lms/screens/profile/profile_page.dart';
 
@@ -13,23 +14,36 @@ AppBar customAppBar({
     backgroundColor: isDarkMode ? Colors.black : Colors.teal,
     title: showGreeting
         ? Row(
-      children: [
-        Image.asset('assets/images/logo.png', height: 55),
-        const SizedBox(width: 10),
-        Text(
-          'Hello, Adam',
-          style: TextStyle(
-            color: isDarkMode ? Colors.white : Colors.black,
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ],
-    )
-        : Text('smart_lms'' '),
+            children: [
+              Image.asset('assets/images/logo.png', height: 55),
+              const SizedBox(width: 10),
+              Text(
+                'Hello, Adam'.tr(),
+                style: TextStyle(
+                  color: isDarkMode ? Colors.white : Colors.black,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          )
+        : Text('Smart LMS'.tr().tr()),
     actions: actions ??
         [
-
+          // زر تغيير اللغة
+          IconButton(
+            icon: Icon(
+              Icons.language,
+              color: isDarkMode ? Colors.white : Colors.black,
+            ),
+            onPressed: () {
+              if (context.locale == const Locale('en')) {
+                context.setLocale(const Locale('ar'));
+              } else {
+                context.setLocale(const Locale('en'));
+              }
+            },
+          ),
           // زر تبديل الثيم
           IconButton(
             icon: Icon(

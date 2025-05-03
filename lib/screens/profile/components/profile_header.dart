@@ -1,4 +1,3 @@
-
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -79,9 +78,9 @@ class ProfileHeader extends StatelessWidget {
           backgroundImage: AssetImage('assets/images/profile2.png'),
         ),
         SizedBox(height: 8),
-        Text('Adam Raw',
+        Text('Adam Raw'.tr(),
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-        Text('alexarawles@gmail.com', style: TextStyle(color: Colors.grey)),
+        Text('alexarawles@gmail.com'.tr(), style: TextStyle(color: Colors.grey)),
       ],
     );
   }

@@ -1,4 +1,4 @@
-
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
 class AllCourseCard extends StatelessWidget {
@@ -68,7 +68,7 @@ class AllCourseCard extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(left: 8.0),
             child: Text(
-              'Free',
+              'Free'.tr(),
               style: TextStyle(
                 color: Colors.green,
                 fontSize: 12,
@@ -91,7 +91,7 @@ class AllCourseCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(8),
                 ),
               ),
-              child: Text('View More',
+              child: Text('View More'.tr(),
                   style: TextStyle(fontSize: 12, color: Colors.white)),
             ),
           ),

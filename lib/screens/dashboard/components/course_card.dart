@@ -1,4 +1,4 @@
-
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:smart_lms/models/course.dart';
 import 'package:smart_lms/screens/dashboard/components/course_details_page.dart';
@@ -71,7 +71,7 @@ class CourseCard extends StatelessWidget {
     switch (title) {
       case 'Data Science':
         return Course(
-            title: 'Data Science',
+            title: 'Data Science'.tr(),
             imagePath: 'assets/images/machine_course.png',
             description: 'Learn data analysis and visualization',
             rating: 4.8,
@@ -86,7 +86,7 @@ class CourseCard extends StatelessWidget {
                 'in the field of big data and analytics.');
       case 'UX Design':
         return Course(
-            title: 'UX Design',
+            title: 'UX Design'.tr(),
             imagePath: 'assets/images/web_course.png',
             description: 'Master user experience design principles',
             rating: 4.7,
@@ -101,7 +101,7 @@ class CourseCard extends StatelessWidget {
                 'that users will love.');
       case 'Flutter':
         return Course(
-            title: 'Flutter Development',
+            title: 'Flutter Development'.tr(),
             imagePath: 'assets/images/flutter_course.png',
             description: 'Build cross-platform apps with Flutter',
             rating: 4.9,
@@ -116,7 +116,7 @@ class CourseCard extends StatelessWidget {
                 'responsive and attractive user interfaces.');
       case 'AI Basics':
         return Course(
-            title: 'AI Basics',
+            title: 'AI Basics'.tr(),
             imagePath: 'assets/images/machine_course.png',
             description: 'Introduction to artificial intelligence',
             rating: 4.6,

@@ -1,4 +1,4 @@
-
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:smart_lms/models/course.dart';
 import 'package:smart_lms/screens/courses/courses_page.dart';
@@ -36,8 +36,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
     if (!_hasShownNotification) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('📢 لديك محاضرة Flutter اليوم الساعة 5 مساءً!'),
+          SnackBar(
+            content: Text('📢 لديك محاضرة Flutter اليوم الساعة 5 مساءً!'.tr()),
             duration: Duration(seconds: 3),
           ),
         );
@@ -48,7 +48,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   final List<Course> courses = [
     Course(
-        title: 'Machine Learning',
+        title: 'Machine Learning'.tr(),
         imagePath: 'assets/images/machine_course.png',
         description: 'Intro to Machine Learning with Python',
         rating: 4.9,
@@ -58,7 +58,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         price: 49.9,
         overview: 'Learn the basics of machine learning...'),
     Course(
-        title: 'Cyber Security',
+        title: 'Cyber Security'.tr(),
         imagePath: 'assets/images/security_course.png',
         description: 'Protect and secure systems from threats',
         rating: 4.7,
@@ -68,7 +68,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         price: 39.9,
         overview: 'An intro to modern cyber security practices...'),
     Course(
-        title: 'Web Development',
+        title: 'Web Development'.tr(),
         imagePath: 'assets/images/web_course.png',
         description: 'Full-stack web development course',
         rating: 4.8,
@@ -81,10 +81,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   // Lista de cursos para My Courses section
   final List<Map<String, String>> myCourses = [
-    {'title': 'Data Science', 'short': 'DS'},
-    {'title': 'UX Design', 'short': 'UX'},
-    {'title': 'Flutter', 'short': 'FD'},
-    {'title': 'AI Basics', 'short': 'AI'},
+    {'title': 'Data Science'.tr(), 'short': 'DS'},
+    {'title': 'UX Design'.tr(), 'short': 'UX'},
+    {'title': 'Flutter'.tr(), 'short': 'FD'},
+    {'title': 'AI Basics'.tr(), 'short': 'AI'},
   ];
 
   @override
@@ -111,7 +111,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 decoration: InputDecoration(
                   prefixIcon: Icon(Icons.search,
                       color: theme.inputDecorationTheme.hintStyle?.color),
-                  hintText: 'Search',
+                  hintText: 'Search'.tr(),
                   hintStyle: theme.inputDecorationTheme.hintStyle,
                   filled: true,
                   fillColor: theme.inputDecorationTheme.fillColor,
@@ -123,19 +123,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 style: TextStyle(color: theme.textTheme.bodyMedium?.color),
               ),
               const SizedBox(height: 22),
-              const Row(
+              Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   DashboardCard(
-                    title: 'Assignment',
-                    subtitle: 'Task Progress',
+                    title: 'Assignment'.tr(),
+                    subtitle: 'Task Progress'.tr(),
                     value: 'Assignment',
                     status: '3 of 5 tasks left',
                     isPerformance: true,
                   ),
                   DashboardCard(
-                    title: 'Performance',
-                    subtitle: 'GRADE',
+                    title: 'Performance'.tr(),
+                    subtitle: 'GRADE'.tr(),
                     value: 'B+',
                     status: 'Good',
                     isPerformance: true,
@@ -143,7 +143,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ],
               ),
               const SizedBox(height: 22),
-              Text('My Courses',
+              Text('My Courses'.tr(),
                   style: themeText.titleMedium!.copyWith(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -169,7 +169,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
               ),
               const SizedBox(height: 10),
-              Text('Continue Watching',
+              Text('Continue Watching'.tr(),
                   style: themeText.titleMedium!.copyWith(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -181,7 +181,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   children: [
                     ContinueWatchingCard(
                       course: Course(
-                          title: 'Computer Networking',
+                          title: 'Computer Networking'.tr(),
                           imagePath: 'assets/images/network_course.jpg',
                           description: 'Intro to networking',
                           rating: 4.5,
@@ -194,7 +194,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ),
                     ContinueWatchingCard(
                       course: Course(
-                          title: 'Flutter',
+                          title: 'Flutter'.tr(),
                           imagePath: 'assets/images/flutter_course.png',
                           description: 'Learn to build Flutter apps',
                           rating: 4.6,
@@ -207,7 +207,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ),
                     ContinueWatchingCard(
                       course: Course(
-                          title: 'React Native',
+                          title: 'React Native'.tr(),
                           imagePath: 'assets/images/react_course.png',
                           description: 'Cross-platform mobile dev',
                           rating: 4.7,
@@ -222,7 +222,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
               ),
               const SizedBox(height: 22),
-              Text('Recommended Courses',
+              Text('Recommended Courses'.tr(),
                   style: themeText.titleMedium!.copyWith(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -309,24 +309,24 @@ class _DashboardScreenState extends State<DashboardScreen> {
         currentIndex: _currentIndex,
         selectedItemColor: Colors.teal,
         unselectedItemColor: Colors.grey,
-        items: const [
+        items: [
           BottomNavigationBarItem(
             icon: Icon(Icons.home_outlined),
             activeIcon: Icon(Icons.home_filled),
-            label: 'Dashboard',
+            label: 'Dashboard'.tr(),
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.video_library_outlined),
             //activeIcon: Icon(Icons.video_library_rounded),
-            label: 'Courses',
+            label: 'Courses'.tr(),
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.event_note_outlined),
-            label: 'Lectures',
+            label: 'Lectures'.tr(),
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person_outline),
-            label: 'Profile',
+            label: 'Profile'.tr(),
           ),
         ],
       ),

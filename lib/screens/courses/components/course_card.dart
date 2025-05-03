@@ -1,4 +1,4 @@
-
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
 class CourseCard extends StatelessWidget {
@@ -43,7 +43,7 @@ class CourseCard extends StatelessWidget {
           Row(
             children: [
               Icon(Icons.star, size: 14, color: Colors.amber),
-              Text(' $rating')
+              Text(' $rating'.tr())
             ],
           ),
           Text(details, style: TextStyle(color: Colors.grey.shade600)),
@@ -54,7 +54,7 @@ class CourseCard extends StatelessWidget {
             children: [
               Text(price,
                   style: TextStyle(
-                      color: price == 'Free'
+                      color: price == 'Free'.tr()
                           ? Colors.green
                           : Theme.of(context).textTheme.bodyLarge?.color,
                       fontWeight: FontWeight.bold)),
@@ -65,7 +65,7 @@ class CourseCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
-                  'View More',
+                  'View More'.tr(),
                   style: TextStyle(color: Colors.white),
                 ),
               )

@@ -1,9 +1,8 @@
-
 import 'dart:io';
 
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smart_lms/screens/lecture/lecture_page.dart';
@@ -37,7 +36,7 @@ class _ProfilePageState extends State<ProfilePage> {
   File? _profileImage;
 
   final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController(text: 'Adam Raw');
+  final _nameController = TextEditingController(text: 'Adam Raw ');
   final _emailController = TextEditingController(text: 'alexarawles@gmail.com');
   final _phoneController = TextEditingController(text: '01010111049844');
   final _birthDateController = TextEditingController(text: '26/07/2000');
@@ -114,7 +113,7 @@ class _ProfilePageState extends State<ProfilePage> {
             children: [
               ListTile(
                 leading: const Icon(Icons.photo_library),
-                title: const Text('اختيار من معرض الصور'),
+                title: Text('Choose from gallery'.tr()),
                 onTap: () async {
                   Navigator.pop(context);
                   await _getImage(ImageSource.gallery);
@@ -122,7 +121,7 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
               ListTile(
                 leading: const Icon(Icons.photo_camera),
-                title: const Text('التقاط صورة من الكاميرا'),
+                title: Text('Take a photo'.tr()),
                 onTap: () async {
                   Navigator.pop(context);
                   await _getImage(ImageSource.camera);
@@ -152,7 +151,7 @@ class _ProfilePageState extends State<ProfilePage> {
     if (_formKey.currentState!.validate()) {
       // يمكنك هنا حفظ بيانات المستخدم الأخرى مثل الاسم والبريد الإلكتروني إلخ
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('تم تحديث الملف الشخصي بنجاح')),
+        SnackBar(content: Text('Profile updated successfully'.tr())),
       );
     }
   }
@@ -163,12 +162,12 @@ class _ProfilePageState extends State<ProfilePage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Log out'),
-        content: const Text('Are you sure you want to log out?'),
+        title: Text('Log out'.tr()),
+        content: Text('Are you sure you want to log out?'.tr()),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text('Cancel'.tr()),
           ),
           TextButton(
             onPressed: () async {
@@ -195,7 +194,7 @@ class _ProfilePageState extends State<ProfilePage> {
             style: TextButton.styleFrom(
               foregroundColor: Colors.red,
             ),
-            child: const Text('Log out'),
+            child: Text('Log out'.tr().tr()),
           ),
         ],
       ),
@@ -284,26 +283,26 @@ class _ProfilePageState extends State<ProfilePage> {
         currentIndex: _currentIndex,
         selectedItemColor: Colors.teal,
         unselectedItemColor: Colors.grey,
-        items: const [
+        items: [
           BottomNavigationBarItem(
             icon: Icon(Icons.home_outlined),
             activeIcon: Icon(Icons.home),
-            label: 'Dashboard',
+            label: 'Dashboard'.tr(),
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.video_library_outlined),
             activeIcon: Icon(Icons.video_library),
-            label: 'Courses',
+            label: 'Courses'.tr(),
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.event_note_outlined),
             activeIcon: Icon(Icons.event_note),
-            label: 'Lectures',
+            label: 'Lectures'.tr(),
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person_outline),
             activeIcon: Icon(Icons.person),
-            label: 'Profile',
+            label: 'Profile'.tr(),
           ),
         ],
       ),

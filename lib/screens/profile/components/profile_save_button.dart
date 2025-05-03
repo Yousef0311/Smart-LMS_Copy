@@ -1,4 +1,4 @@
-
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
 class ProfileSaveButton extends StatelessWidget {
@@ -10,7 +10,7 @@ class ProfileSaveButton extends StatelessWidget {
     return ElevatedButton(
       onPressed: onSave,
       style: ElevatedButton.styleFrom(backgroundColor: Colors.teal),
-      child: Text('Save'),
+      child: Text('Save'.tr()),
     );
   }
 }

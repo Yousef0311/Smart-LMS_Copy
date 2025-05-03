@@ -1,4 +1,4 @@
-
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:smart_lms/models/course.dart';
 
@@ -16,7 +16,7 @@ class CourseDetailsPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        title: Text('Course Details', style: textTheme.titleLarge),
+        title: Text('Course Details'.tr(), style: textTheme.titleLarge),
         backgroundColor:
             theme.appBarTheme.backgroundColor ?? theme.primaryColor,
         elevation: 0,
@@ -53,7 +53,7 @@ class CourseDetailsPage extends StatelessWidget {
               children: [
                 const Icon(Icons.star, color: Colors.amber, size: 20),
                 const SizedBox(width: 5),
-                Text('${course.rating}', style: textTheme.bodyMedium),
+                Text('${course.rating}'.tr(), style: textTheme.bodyMedium),
                 const Spacer(),
                 const Icon(Icons.access_time, size: 20),
                 const SizedBox(width: 5),
@@ -67,7 +67,7 @@ class CourseDetailsPage extends StatelessWidget {
               children: [
                 const Icon(Icons.people, size: 20),
                 const SizedBox(width: 5),
-                Text('${course.students}+ Students',
+                Text('${course.students}+ Students'.tr(),
                     style: textTheme.bodyMedium),
                 const Spacer(),
                 const Icon(Icons.school, size: 20),
@@ -94,7 +94,7 @@ class CourseDetailsPage extends StatelessWidget {
               child: ElevatedButton.icon(
                 onPressed: () {},
                 icon: const Icon(Icons.play_arrow),
-                label: const Text('Start Course'),
+                label: Text('Start Course'.tr()),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: theme.primaryColor,
                   foregroundColor: Colors.white,

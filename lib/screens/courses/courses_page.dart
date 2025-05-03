@@ -1,4 +1,4 @@
-
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:smart_lms/screens/courses/components/course_card.dart';
 import 'package:smart_lms/screens/dashboard/dashboard_screen.dart';
@@ -55,7 +55,7 @@ class _CoursesPageState extends State<CoursesPage> {
                 decoration: InputDecoration(
                   prefixIcon: Icon(Icons.search,
                       color: theme.inputDecorationTheme.hintStyle?.color),
-                  hintText: 'Search your course...',
+                  hintText: 'Search your course...'.tr(),
                   hintStyle: theme.inputDecorationTheme.hintStyle,
                   border: InputBorder.none,
                 ),
@@ -63,7 +63,7 @@ class _CoursesPageState extends State<CoursesPage> {
               ),
             ),
             const SizedBox(height: 24),
-            Text('My Courses',
+            Text('My Courses'.tr(),
                 style: themeText.titleMedium!.copyWith(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -76,15 +76,15 @@ class _CoursesPageState extends State<CoursesPage> {
                 children: [
                   CourseCard(
                     image: 'assets/images/web_course.png',
-                    title: 'Back-End Course',
+                    title: 'Back-End Course'.tr(),
                     rating: 4.6,
-                    details: 'Beginner • 12 lessons • 2 h 50m',
+                    details: 'Beginner • 12 lessons • 2 h 50m'.tr(),
                     students: '1.6k students',
                     price: 'Free',
                   ),
                   CourseCard(
                     image: 'assets/images/network_course.jpg',
-                    title: 'Computer Networking',
+                    title: 'Computer Networking'.tr(),
                     rating: 4.6,
                     details: 'Beginner • 18 lessons • 3 h 45m',
                     students: '2.3k students',
@@ -92,7 +92,7 @@ class _CoursesPageState extends State<CoursesPage> {
                   ),
                   CourseCard(
                     image: 'assets/images/web_course.png',
-                    title: 'Front-End Course',
+                    title: 'Front-End Course'.tr(),
                     rating: 4.6,
                     details: 'Beginner • 12 lessons • 2 h 50m',
                     students: '1.6k students',
@@ -102,7 +102,7 @@ class _CoursesPageState extends State<CoursesPage> {
               ),
             ),
             const SizedBox(height: 24),
-            Text('All Courses',
+            Text('All Courses'.tr(),
                 style: themeText.titleMedium!.copyWith(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -118,16 +118,16 @@ class _CoursesPageState extends State<CoursesPage> {
               padding: EdgeInsets.zero,
               children: [
                 AllCourseCard(
-                    title: 'AI Course',
+                    title: 'AI Course'.tr(),
                     image: 'assets/images/machine_course.png'),
                 AllCourseCard(
-                    title: 'Flutter & Dart',
+                    title: 'Flutter & Dart'.tr(),
                     image: 'assets/images/flutter_course.png'),
                 AllCourseCard(
-                    title: 'Data Science',
+                    title: 'Data Science'.tr(),
                     image: 'assets/images/react_course.png'),
                 AllCourseCard(
-                    title: 'Cyber Security',
+                    title: 'Cyber Security'.tr(),
                     image: 'assets/images/security_course.png'),
               ],
             ),
@@ -172,23 +172,23 @@ class _CoursesPageState extends State<CoursesPage> {
         currentIndex: _currentIndex,
         selectedItemColor: Colors.teal,
         unselectedItemColor: Colors.grey,
-        items: const [
+        items: [
           BottomNavigationBarItem(
             icon: Icon(Icons.home_outlined),
-            label: 'Dashboard',
+            label: 'Dashboard'.tr(),
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.video_library_outlined),
             activeIcon: Icon(Icons.video_library_rounded),
-            label: 'Courses',
+            label: 'Courses'.tr(),
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.event_note_outlined),
-            label: 'Lectures',
+            label: 'Lectures'.tr(),
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person_outline),
-            label: 'Profile',
+            label: 'Profile'.tr(),
           ),
         ],
       ),

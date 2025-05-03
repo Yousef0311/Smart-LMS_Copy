@@ -1,4 +1,4 @@
-
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:smart_lms/screens/courses/courses_page.dart';
 import 'package:smart_lms/screens/dashboard/dashboard_screen.dart';
@@ -203,23 +203,23 @@ class _LecturesPageState extends State<LecturesPage> {
         },
         selectedItemColor: Colors.teal,
         unselectedItemColor: Colors.grey,
-        items: const [
+        items: [
           BottomNavigationBarItem(
             icon: Icon(Icons.home_outlined),
-            label: 'Dashboard',
+            label: 'Dashboard'.tr(),
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.video_library_outlined),
-            label: 'Courses',
+            label: 'Courses'.tr(),
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.event_note_outlined),
             activeIcon: Icon(Icons.event_note),
-            label: 'Lectures',
+            label: 'Lectures'.tr(),
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person_outline),
-            label: 'Profile',
+            label: 'Profile'.tr(),
           ),
         ],
       ),

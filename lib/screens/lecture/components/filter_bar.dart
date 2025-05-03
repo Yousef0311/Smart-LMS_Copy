@@ -1,4 +1,4 @@
-
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
 class FilterBar extends StatelessWidget {
@@ -23,7 +23,7 @@ class FilterBar extends StatelessWidget {
         Expanded(
           child: TextField(
             decoration: InputDecoration(
-              hintText: 'Search by course name...',
+              hintText: 'Search by course name...'.tr(),
               prefixIcon: const Icon(Icons.search),
               filled: true,
               fillColor: theme.cardColor,
