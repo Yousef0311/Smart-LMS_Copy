@@ -1,16 +1,19 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:smart_lms/screens/dashboard/dashboard_screen.dart'; // استيراد صفحة لوحة التحكم
 import 'package:smart_lms/screens/login_page.dart';
 
 class SplashScreen extends StatefulWidget {
   final bool isDarkMode;
   final VoidCallback toggleTheme;
+  final bool skipSplash; // خاصية جديدة للتحكم في عرض شاشة البداية
 
   const SplashScreen({
     Key? key,
     required this.isDarkMode,
     required this.toggleTheme,
+    this.skipSplash = false,
   }) : super(key: key);
 
   @override
@@ -26,6 +29,10 @@ class _SplashScreenState extends State<SplashScreen>
   late Animation<double> _fadeAnimation;
   late Animation<double> _scaleAnimation;
   late Animation<Offset> _slideAnimation;
+
+  // متغير للتحكم في حالة التسجيل
+  static bool isFirstLaunch = true;
+  static bool isLoggedIn = false;
 
   @override
   void initState() {
@@ -67,8 +74,26 @@ class _SplashScreenState extends State<SplashScreen>
     // بدء الحركة
     _animationController.forward();
 
-    // الانتقال إلى صفحة تسجيل الدخول بعد فترة
-    Timer(const Duration(milliseconds: 2800), () {
+    // التحقق من skipSplash (للتحكم في إعادة التوجيه بعد تغيير اللغة)
+    if (widget.skipSplash) {
+      // إذا كانت skipSplash صحيحة، افحص حالة تسجيل الدخول وانتقل فوراً
+      _navigateBasedOnAuthState();
+    } else {
+      // الانتقال إلى الشاشة المناسبة بعد فترة زمنية
+      Timer(const Duration(milliseconds: 2800), () {
+        _navigateBasedOnAuthState();
+      });
+    }
+  }
+
+  // دالة جديدة للتنقل بناءً على حالة تسجيل الدخول
+  void _navigateBasedOnAuthState() {
+    // هنا يمكنك إضافة منطق للتحقق من حالة تسجيل الدخول
+    // مثلاً باستخدام SharedPreferences
+
+    // للتبسيط: في المرة الأولى ننتقل إلى تسجيل الدخول، بعد ذلك ننتقل مباشرة إلى لوحة التحكم
+    if (isFirstLaunch) {
+      isFirstLaunch = false;
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
           builder: (_) => LoginPage(
@@ -77,7 +102,17 @@ class _SplashScreenState extends State<SplashScreen>
           ),
         ),
       );
-    });
+    } else {
+      // إذا كان المستخدم قد سجل الدخول من قبل (بعد تغيير اللغة مثلاً)
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => DashboardScreen(
+            isDarkMode: widget.isDarkMode,
+            toggleTheme: widget.toggleTheme,
+          ),
+        ),
+      );
+    }
   }
 
   @override
@@ -88,6 +123,15 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   Widget build(BuildContext context) {
+    // إذا كانت skipSplash صحيحة، نعرض شاشة بيضاء فارغة بدلاً من شاشة البداية
+    if (widget.skipSplash) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
     return Scaffold(
       body: Container(
         // استخدام التدرج اللوني المحدد

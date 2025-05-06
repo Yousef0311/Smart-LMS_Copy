@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:smart_lms/screens/login_page.dart';
@@ -99,28 +100,28 @@ class _RegisterPageState extends State<RegisterPage> {
                     ),
                     const SizedBox(height: 22),
                     Input(
-                      hint: 'Full Name',
+                      hint: 'Full Name'.tr(),
                       icon: Icons.person,
                       keyboardType: TextInputType.name,
                       controller: _nameController,
                     ),
                     const SizedBox(height: 16),
                     Input(
-                      hint: 'Email',
+                      hint: 'Email'.tr(),
                       icon: Icons.mail,
                       keyboardType: TextInputType.emailAddress,
                       controller: _emailController,
                     ),
                     const SizedBox(height: 16),
                     Input(
-                      hint: 'Password',
+                      hint: 'Password'.tr(),
                       icon: Icons.lock,
                       isPassword: true,
                       controller: _passwordController,
                     ),
                     const SizedBox(height: 16),
                     Input(
-                      hint: 'Confirm Password',
+                      hint: 'Confirm Password'.tr(),
                       icon: Icons.lock,
                       isPassword: true,
                       controller: _confirmPasswordController,
@@ -174,7 +175,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     //   'Or register with',
                     //   style: TextStyle(color: Colors.black54),
                     // ),
-                    const SizedBox(height: 16),
+                    /*const SizedBox(height: 16),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -185,6 +186,8 @@ class _RegisterPageState extends State<RegisterPage> {
                             FontAwesomeIcons.facebook, Colors.blue),
                       ],
                     ),
+
+                     */
                     const SizedBox(height: 24),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,

@@ -16,18 +16,18 @@ AppBar customAppBar({
         ? Row(
             children: [
               Image.asset('assets/images/logo.png', height: 55),
-              const SizedBox(width: 10),
+              const SizedBox(width: 8),
               Text(
                 'Hello, Adam'.tr(),
                 style: TextStyle(
                   color: isDarkMode ? Colors.white : Colors.black,
-                  fontSize: 20,
+                  fontSize: 19,
                   fontWeight: FontWeight.bold,
                 ),
               ),
             ],
           )
-        : Text('Smart LMS'.tr().tr()),
+        : Text('Smart LMS'.tr()),
     actions: actions ??
         [
           // زر تغيير اللغة
@@ -37,11 +37,20 @@ AppBar customAppBar({
               color: isDarkMode ? Colors.white : Colors.black,
             ),
             onPressed: () {
+              // تغيير اللغة بدون تغيير الصفحة الحالية
               if (context.locale == const Locale('en')) {
                 context.setLocale(const Locale('ar'));
               } else {
                 context.setLocale(const Locale('en'));
               }
+
+              // إظهار رسالة تأكيد تغيير اللغة
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Change Language'.tr()),
+                  duration: const Duration(seconds: 1),
+                ),
+              );
             },
           ),
           // زر تبديل الثيم
@@ -53,10 +62,10 @@ AppBar customAppBar({
             onPressed: toggleTheme,
           ),
           Padding(
-            padding: const EdgeInsets.only(right: 12.0),
+            padding: const EdgeInsetsDirectional.only(end: 12.0),
             child: GestureDetector(
               onTap: () {
-                Navigator.pushReplacement(
+                Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) => ProfilePage(

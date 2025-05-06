@@ -44,7 +44,6 @@ class _MyAppState extends State<MyApp> {
       darkTheme: darkTheme,
       themeMode: _isDarkMode ? ThemeMode.dark : ThemeMode.light,
       debugShowCheckedModeBanner: false,
-      key: ValueKey<Locale>(context.locale), // مهم للتبديل السليم بين LTR و RTL
       home: SplashScreen(
         isDarkMode: _isDarkMode,
         toggleTheme: _toggleTheme,

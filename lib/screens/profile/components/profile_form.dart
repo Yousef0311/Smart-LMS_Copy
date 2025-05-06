@@ -1,4 +1,4 @@
-
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
 class ProfileForm extends StatelessWidget {
@@ -30,7 +30,7 @@ class ProfileForm extends StatelessWidget {
           TextFormField(
             controller: nameController,
             decoration: InputDecoration(
-              labelText: 'Name',
+              labelText: 'Name'.tr(),
               prefixIcon: Icon(Icons.person),
               border: OutlineInputBorder(),
             ),
@@ -40,7 +40,7 @@ class ProfileForm extends StatelessWidget {
             controller: phoneController,
             keyboardType: TextInputType.phone,
             decoration: InputDecoration(
-              labelText: 'Phone Number',
+              labelText: 'Phone Number'.tr(),
               prefixIcon: Icon(Icons.phone),
               border: OutlineInputBorder(),
             ),
@@ -50,7 +50,7 @@ class ProfileForm extends StatelessWidget {
             controller: emailController,
             keyboardType: TextInputType.emailAddress,
             decoration: InputDecoration(
-              labelText: 'Email',
+              labelText: 'Email'.tr(),
               prefixIcon: Icon(Icons.email),
               border: OutlineInputBorder(),
             ),
@@ -62,7 +62,7 @@ class ProfileForm extends StatelessWidget {
               child: TextFormField(
                 controller: birthDateController,
                 decoration: InputDecoration(
-                  labelText: 'Birthdate',
+                  labelText: 'Birthdate'.tr(),
                   prefixIcon: Icon(Icons.cake),
                   border: OutlineInputBorder(),
                 ),
@@ -74,7 +74,7 @@ class ProfileForm extends StatelessWidget {
             controller: passwordController,
             obscureText: true,
             decoration: InputDecoration(
-              labelText: 'Change Password',
+              labelText: 'Change Password'.tr(),
               prefixIcon: Icon(Icons.lock),
               border: OutlineInputBorder(),
             ),

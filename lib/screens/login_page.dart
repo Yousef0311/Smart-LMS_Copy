@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:smart_lms/screens/register_page.dart';
@@ -70,7 +71,7 @@ class _LoginPageState extends State<LoginPage>
       );
     } else {
       setState(() {
-        _errorMessage = 'Invalid email or password';
+        _errorMessage = 'Invalid email or password'.tr();
       });
     }
   }
@@ -147,14 +148,14 @@ class _LoginPageState extends State<LoginPage>
                   ),
                   const SizedBox(height: 32),
                   Input(
-                    hint: 'Enter your email',
+                    hint: 'Enter your email'.tr(),
                     icon: Icons.email,
                     keyboardType: TextInputType.emailAddress,
                     controller: _emailController,
                   ),
                   const SizedBox(height: 16),
                   Input(
-                    hint: 'Enter your password',
+                    hint: 'Enter your password'.tr(),
                     icon: Icons.lock,
                     isPassword: _obscurePassword,
                     controller: _passwordController,
@@ -225,7 +226,7 @@ class _LoginPageState extends State<LoginPage>
                       ),
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  /*const SizedBox(height: 24),
                   const Text(
                     'Or login with',
                     style: TextStyle(color: Colors.black54),
@@ -241,7 +242,8 @@ class _LoginPageState extends State<LoginPage>
                           FontAwesomeIcons.facebook, Colors.blue),
                     ],
                   ),
-                  const SizedBox(height: 32),
+                  */
+                  const SizedBox(height: 20),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
