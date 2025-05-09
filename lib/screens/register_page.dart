@@ -1,7 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:smart_lms/screens/login_page.dart';
+import 'package:smart_lms/services/user_service.dart';
 
 import '../widgets/input.dart';
 import 'dashboard/dashboard_screen.dart';
@@ -23,6 +23,16 @@ class _RegisterPageState extends State<RegisterPage> {
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController =
       TextEditingController();
+  final TextEditingController _phoneController = TextEditingController();
+  final TextEditingController _ageController = TextEditingController();
+  final TextEditingController _birthDateController = TextEditingController();
+
+  final UserService _userService = UserService();
+
+  bool _isLoading = false;
+  String? _errorMessage;
+
+  DateTime? _selectedDate;
 
   @override
   void dispose() {
@@ -30,14 +40,114 @@ class _RegisterPageState extends State<RegisterPage> {
     _emailController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
+    _phoneController.dispose();
+    _ageController.dispose();
+    _birthDateController.dispose();
     super.dispose();
+  }
+
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedDate ?? DateTime(2000),
+      firstDate: DateTime(1950),
+      lastDate: DateTime.now(),
+    );
+
+    if (picked != null && picked != _selectedDate) {
+      setState(() {
+        _selectedDate = picked;
+        // Format as YYYY-MM-DD for API
+        _birthDateController.text =
+            "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
+
+        // Calculate age
+        final now = DateTime.now();
+        int age = now.year - picked.year;
+        if (now.month < picked.month ||
+            (now.month == picked.month && now.day < picked.day)) {
+          age--;
+        }
+        _ageController.text = age.toString();
+      });
+    }
+  }
+
+  Future<void> _handleRegister() async {
+    // Validate input fields
+    if (_nameController.text.isEmpty ||
+        _emailController.text.isEmpty ||
+        _passwordController.text.isEmpty ||
+        _confirmPasswordController.text.isEmpty ||
+        _phoneController.text.isEmpty ||
+        _birthDateController.text.isEmpty) {
+      setState(() {
+        _errorMessage = 'Please fill all required fields'.tr();
+      });
+      return;
+    }
+
+    if (_passwordController.text != _confirmPasswordController.text) {
+      setState(() {
+        _errorMessage = 'Passwords do not match'.tr();
+      });
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      // Prepare registration data
+      final userData = {
+        "name": _nameController.text.trim(),
+        "email": _emailController.text.trim(),
+        "password": _passwordController.text,
+        "password_confirmation": _confirmPasswordController.text,
+        "age": int.parse(_ageController.text),
+        "gender": "male", // Default value
+        "phone": _phoneController.text.trim(),
+        "region_id": 5, // Default value
+        "date_of_birth": _birthDateController.text,
+      };
+
+      // Call API to register
+      final response = await _userService.register(userData);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Registration successful!'.tr())),
+      );
+
+      // Navigate to dashboard
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(
+          builder: (context) => DashboardScreen(
+            toggleTheme: widget.toggleTheme,
+            isDarkMode: widget.isDarkMode,
+          ),
+        ),
+        (route) => false,
+      );
+    } catch (e) {
+      setState(() {
+        _errorMessage = e.toString();
+        if (_errorMessage!.contains('Exception:')) {
+          _errorMessage = _errorMessage!.split('Exception:')[1].trim();
+        }
+      });
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    // تجاوز كامل للثيم للصفحة
     return Theme(
-      // إنشاء ثيم خاص بصفحة التسجيل مستقل عن ثيم التطبيق
       data: ThemeData(
         scaffoldBackgroundColor: Colors.transparent,
         textTheme: const TextTheme(
@@ -62,7 +172,6 @@ class _RegisterPageState extends State<RegisterPage> {
         ),
       ),
       child: Scaffold(
-        // إلغاء تأثير لون الخلفية من الثيم
         backgroundColor: Colors.transparent,
         extendBodyBehindAppBar: true,
         resizeToAvoidBottomInset: true,
@@ -70,8 +179,6 @@ class _RegisterPageState extends State<RegisterPage> {
           child: SingleChildScrollView(
             child: Container(
               width: double.infinity,
-              height: MediaQuery.of(context).size.height -
-                  MediaQuery.of(context).padding.top,
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
@@ -98,36 +205,80 @@ class _RegisterPageState extends State<RegisterPage> {
                         color: Colors.teal,
                       ),
                     ),
-                    const SizedBox(height: 22),
+                    const SizedBox(height: 14),
                     Input(
                       hint: 'Full Name'.tr(),
                       icon: Icons.person,
                       keyboardType: TextInputType.name,
                       controller: _nameController,
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 8),
                     Input(
                       hint: 'Email'.tr(),
                       icon: Icons.mail,
                       keyboardType: TextInputType.emailAddress,
                       controller: _emailController,
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 8),
+                    Input(
+                      hint: 'Phone Number'.tr(),
+                      icon: Icons.phone,
+                      keyboardType: TextInputType.phone,
+                      controller: _phoneController,
+                    ),
+                    const SizedBox(height: 8),
+                    GestureDetector(
+                      onTap: () => _selectDate(context),
+                      child: AbsorbPointer(
+                        child: Input(
+                          hint: 'Date of Birth'.tr(),
+                          icon: Icons.calendar_today,
+                          controller: _birthDateController,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
                     Input(
                       hint: 'Password'.tr(),
                       icon: Icons.lock,
                       isPassword: true,
                       controller: _passwordController,
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 8),
                     Input(
                       hint: 'Confirm Password'.tr(),
                       icon: Icons.lock,
                       isPassword: true,
                       controller: _confirmPasswordController,
                     ),
+                    if (_errorMessage != null) ...[
+                      const SizedBox(height: 12),
+                      Container(
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: Colors.red.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
+                          border:
+                              Border.all(color: Colors.red.withOpacity(0.3)),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(Icons.error_outline,
+                                color: Colors.red, size: 16),
+                            SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                _errorMessage!,
+                                style: const TextStyle(
+                                    color: Colors.red, fontSize: 14),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: 24),
-                    // زر التسجيل مع تحسينات بصرية
                     Container(
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(10),
@@ -141,18 +292,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         ],
                       ),
                       child: ElevatedButton(
-                        onPressed: () {
-                          Navigator.pushAndRemoveUntil(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => DashboardScreen(
-                                toggleTheme: widget.toggleTheme,
-                                isDarkMode: widget.isDarkMode,
-                              ),
-                            ),
-                            (route) => false,
-                          );
-                        },
+                        onPressed: _isLoading ? null : _handleRegister,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.black,
                           foregroundColor: Colors.white,
@@ -160,34 +300,26 @@ class _RegisterPageState extends State<RegisterPage> {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
                           ),
+                          disabledBackgroundColor: Colors.grey[700],
                         ),
-                        child: const Text(
-                          'Register',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                        child: _isLoading
+                            ? SizedBox(
+                                height: 24,
+                                width: 24,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2.0,
+                                ),
+                              )
+                            : const Text(
+                                'Register',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                       ),
                     ),
-                    // const SizedBox(height: 24),
-                    // const Text(
-                    //   'Or register with',
-                    //   style: TextStyle(color: Colors.black54),
-                    // ),
-                    /*const SizedBox(height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        _buildSocialButton(
-                            FontAwesomeIcons.google, Colors.deepOrangeAccent),
-                        const SizedBox(width: 20),
-                        _buildSocialButton(
-                            FontAwesomeIcons.facebook, Colors.blue),
-                      ],
-                    ),
-
-                     */
                     const SizedBox(height: 24),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -224,31 +356,6 @@ class _RegisterPageState extends State<RegisterPage> {
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildSocialButton(IconData icon, Color color) {
-    return Container(
-      width: 95,
-      height: 50,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            spreadRadius: 1,
-            blurRadius: 3,
-            offset: const Offset(0, 1),
-          ),
-        ],
-      ),
-      child: IconButton(
-        icon: FaIcon(icon, color: color, size: 30),
-        onPressed: () {
-          debugPrint('$icon clicked');
-        },
       ),
     );
   }

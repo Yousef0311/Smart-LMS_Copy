@@ -1,12 +1,16 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:smart_lms/screens/login_page.dart';
 
 class LogoutButton extends StatelessWidget {
-  final VoidCallback onLogout;
+  final bool isDarkMode;
+  final VoidCallback toggleTheme;
 
   const LogoutButton({
     super.key,
-    required this.onLogout,
+    required this.isDarkMode,
+    required this.toggleTheme,
   });
 
   @override
@@ -15,14 +19,14 @@ class LogoutButton extends StatelessWidget {
       width: double.infinity,
       margin: const EdgeInsets.symmetric(vertical: 16),
       child: ElevatedButton.icon(
-        onPressed: onLogout,
+        onPressed: () => _handleLogout(context),
         icon: const Icon(
           Icons.logout_rounded,
           color: Colors.white,
         ),
         label: Text(
           'Log out'.tr(),
-          style: TextStyle(
+          style: const TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,
           ),
@@ -34,6 +38,58 @@ class LogoutButton extends StatelessWidget {
             borderRadius: BorderRadius.circular(10),
           ),
         ),
+      ),
+    );
+  }
+
+  void _handleLogout(BuildContext context) {
+    print("LogoutButton: Logout initiated");
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Log out'.tr()),
+        content: Text('Are you sure you want to log out?'.tr()),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Cancel'.tr()),
+          ),
+          TextButton(
+            onPressed: () async {
+              print("LogoutButton: Logout confirmed");
+
+              // إغلاق مربع الحوار
+              Navigator.pop(context);
+
+              // مسح البيانات المحلية
+              try {
+                print("LogoutButton: Clearing local data");
+                final prefs = await SharedPreferences.getInstance();
+                await prefs.clear();
+                print("LogoutButton: Local data cleared successfully");
+              } catch (e) {
+                print("LogoutButton: Error clearing data - $e");
+              }
+
+              // الانتقال إلى صفحة تسجيل الدخول
+              print("LogoutButton: Navigating to login page");
+              Navigator.of(context).pushAndRemoveUntil(
+                MaterialPageRoute(
+                  builder: (context) => LoginPage(
+                    toggleTheme: toggleTheme,
+                    isDarkMode: isDarkMode,
+                  ),
+                ),
+                (route) => false,
+              );
+            },
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.red,
+            ),
+            child: Text('Log out'.tr()),
+          ),
+        ],
       ),
     );
   }

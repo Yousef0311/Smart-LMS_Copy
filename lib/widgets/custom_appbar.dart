@@ -8,6 +8,7 @@ AppBar customAppBar({
   required VoidCallback toggleTheme,
   bool showGreeting = false,
   List<Widget>? actions,
+  String? userName, // إضافة معامل اسم المستخدم
 }) {
   return AppBar(
     elevation: 0,
@@ -18,7 +19,8 @@ AppBar customAppBar({
               Image.asset('assets/images/logo.png', height: 55),
               const SizedBox(width: 8),
               Text(
-                'Hello, Adam'.tr(),
+                // استخدام اسم المستخدم إذا كان متاحًا، وإلا استخدام "Hello, Guest"
+                'Hello, ${userName ?? "Guest"}'.tr(),
                 style: TextStyle(
                   color: isDarkMode ? Colors.white : Colors.black,
                   fontSize: 19,

@@ -4,9 +4,12 @@ import 'package:smart_lms/screens/splash_screen.dart';
 import 'package:smart_lms/themes/dark_theme.dart';
 import 'package:smart_lms/themes/light_theme.dart';
 
+import 'config/app_config.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await EasyLocalization.ensureInitialized();
+  AppConfig.setEnvironment(Environment.development);
 
   runApp(
     EasyLocalization(

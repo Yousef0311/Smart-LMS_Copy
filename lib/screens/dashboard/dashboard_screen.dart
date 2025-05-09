@@ -5,6 +5,7 @@ import 'package:smart_lms/screens/courses/courses_page.dart';
 import 'package:smart_lms/screens/dashboard/components/course_details_page.dart';
 import 'package:smart_lms/screens/lecture/lecture_page.dart';
 import 'package:smart_lms/screens/profile/profile_page.dart';
+import 'package:smart_lms/services/user_service.dart';
 import 'package:smart_lms/widgets/custom_appbar.dart';
 
 import '../../widgets/transitions.dart';
@@ -29,10 +30,13 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   static bool _hasShownNotification = false;
   int _currentIndex = 0;
-
+  String? _userName; // إضافة متغير لاسم المستخدم
+// تعريف خدمة المستخدم
+  final UserService _userService = UserService();
   @override
   void initState() {
     super.initState();
+    _loadUserData(); // تحميل بيانات المستخدم
     if (!_hasShownNotification) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -43,6 +47,30 @@ class _DashboardScreenState extends State<DashboardScreen> {
         );
         _hasShownNotification = true;
       });
+    }
+  }
+
+  // دالة جديدة لتحميل بيانات المستخدم
+  Future<void> _loadUserData() async {
+    try {
+      // محاولة الحصول على بيانات المستخدم من التخزين المحلي أولاً (أسرع)
+      final userData = await _userService.getLocalUserData();
+      if (userData != null && userData['user'] != null) {
+        setState(() {
+          _userName = userData['user']['name'];
+        });
+      }
+
+      // ثم محاولة تحديث البيانات من API
+      final profileData = await _userService.getProfile();
+      if (profileData['user'] != null) {
+        setState(() {
+          _userName = profileData['user']['name'];
+        });
+      }
+    } catch (e) {
+      print('Error loading user data: $e');
+      // لا نعرض رسالة خطأ للمستخدم هنا، فقط نستخدم الاسم الافتراضي
     }
   }
 
@@ -100,6 +128,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         toggleTheme: widget.toggleTheme,
         showGreeting: true,
         context: context,
+        userName: _userName,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
