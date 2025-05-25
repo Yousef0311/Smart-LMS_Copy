@@ -1,3 +1,4 @@
+// lib/screens/profile/components/logout_button.dart
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -42,7 +43,7 @@ class LogoutButton extends StatelessWidget {
     );
   }
 
-  void _handleLogout(BuildContext context) {
+  Future<void> _handleLogout(BuildContext context) async {
     print("LogoutButton: Logout initiated");
 
     showDialog(
@@ -57,32 +58,46 @@ class LogoutButton extends StatelessWidget {
           ),
           TextButton(
             onPressed: () async {
-              print("LogoutButton: Logout confirmed");
-
-              // إغلاق مربع الحوار
+              // Close the dialog first for better UX
               Navigator.pop(context);
 
-              // مسح البيانات المحلية
+              // Show loading indicator
+              showDialog(
+                context: context,
+                barrierDismissible: false,
+                builder: (context) => const Center(
+                  child: CircularProgressIndicator(),
+                ),
+              );
+
               try {
+                // مسح البيانات المحلية مباشرة بدلاً من انتظار استجابة API
                 print("LogoutButton: Clearing local data");
                 final prefs = await SharedPreferences.getInstance();
                 await prefs.clear();
                 print("LogoutButton: Local data cleared successfully");
-              } catch (e) {
-                print("LogoutButton: Error clearing data - $e");
-              }
 
-              // الانتقال إلى صفحة تسجيل الدخول
-              print("LogoutButton: Navigating to login page");
-              Navigator.of(context).pushAndRemoveUntil(
-                MaterialPageRoute(
-                  builder: (context) => LoginPage(
-                    toggleTheme: toggleTheme,
-                    isDarkMode: isDarkMode,
+                // لن نستخدم استدعاء واجهة برمجة التطبيقات للخروج هنا
+                // بل نكتفي بمسح البيانات المحلية
+              } catch (e) {
+                print("LogoutButton: Error during logout - $e");
+              } finally {
+                // Close loading dialog if it's still showing
+                if (Navigator.canPop(context)) {
+                  Navigator.pop(context);
+                }
+
+                // Navigate to login page and clear navigation stack
+                Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(
+                    builder: (context) => LoginPage(
+                      toggleTheme: toggleTheme,
+                      isDarkMode: isDarkMode,
+                    ),
                   ),
-                ),
-                (route) => false,
-              );
+                  (route) => false, // إزالة كل الشاشات السابقة
+                );
+              }
             },
             style: TextButton.styleFrom(
               foregroundColor: Colors.red,
