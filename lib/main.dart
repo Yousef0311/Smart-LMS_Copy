@@ -1,4 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/foundation.dart'; // 🔴 اضيف ده
 import 'package:flutter/material.dart';
 import 'package:smart_lms/screens/splash_screen.dart';
 import 'package:smart_lms/themes/dark_theme.dart';
@@ -9,7 +10,17 @@ import 'config/app_config.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await EasyLocalization.ensureInitialized();
-  AppConfig.setEnvironment(Environment.development);
+
+  // 🔴 امسح السطر ده:
+  // AppConfig.setEnvironment(Environment.development);
+
+  // 🔴 واستبدله بده:
+  _setupEnvironmentAutomatically();
+
+  // 🔴 اضيف ده للتحقق:
+  if (!AppConfig.validateConfig()) {
+    print('⚠️ خطأ في إعدادات التطبيق');
+  }
 
   runApp(
     EasyLocalization(
@@ -22,6 +33,20 @@ void main() async {
       child: MyApp(),
     ),
   );
+}
+
+// 🔴 اضيف الدالة دي في الآخر
+void _setupEnvironmentAutomatically() {
+  if (kIsWeb) {
+    // إذا كان يعمل على الويب
+    AppConfig.setupForWeb();
+    print('🌐 تم إعداد التطبيق للويب تلقائياً');
+  } else {
+    // إذا كان يعمل على موبايل
+    AppConfig.setupForMobile();
+    print('📱 تم إعداد التطبيق للموبايل تلقائياً');
+    print('📍 IP الموبايل المستخدم: 192.168.1.14');
+  }
 }
 
 class MyApp extends StatefulWidget {
