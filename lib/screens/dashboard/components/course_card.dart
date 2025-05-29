@@ -6,25 +6,27 @@ import 'package:smart_lms/screens/dashboard/components/course_details_page.dart'
 class CourseCard extends StatelessWidget {
   final String title;
   final String short;
+  final Course? course; // إضافة Course object اختياري
 
   const CourseCard({
     super.key,
     required this.title,
     required this.short,
+    this.course, // اختياري للتوافق مع الكود القديم
   });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        // Crear un objeto Course con datos basados en el título
-        final Course course = _getCourseData(title);
+        // إذا كان Course object متوفر، استخدمه، وإلا أنشئ واحد جديد
+        final Course courseToNavigate = course ?? _getCourseData(title);
 
         Navigator.push(
           context,
           PageRouteBuilder(
             pageBuilder: (context, animation, secondaryAnimation) =>
-                CourseDetailsPage(course: course),
+                CourseDetailsPage(course: courseToNavigate),
             transitionsBuilder:
                 (context, animation, secondaryAnimation, child) {
               var fadeTween = Tween<double>(begin: 0.0, end: 1.0);
@@ -66,7 +68,7 @@ class CourseCard extends StatelessWidget {
     );
   }
 
-  // Método para obtener datos del curso basados en el título
+  // دالة للحصول على بيانات الكورس (للتوافق مع الكود القديم)
   Course _getCourseData(String title) {
     switch (title) {
       case 'Data Science':
@@ -130,7 +132,7 @@ class CourseCard extends StatelessWidget {
                 'and computer vision. Ideal for beginners wanting to understand AI fundamentals and applications '
                 'in today\'s technology landscape.');
       default:
-        // Curso genérico por defecto
+        // كورس افتراضي
         return Course(
             title: title,
             imagePath: 'assets/images/web_course.png',

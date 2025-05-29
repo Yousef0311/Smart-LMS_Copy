@@ -32,9 +32,15 @@ class _CoursesPageState extends State<CoursesPage> {
   // خدمة الكورسات
   final CoursesService _coursesService = CoursesService();
 
-  // قوائم البيانات
+  // قوائم البيانات الأصلية
   List<Course> _myCourses = [];
   List<Course> _allCourses = [];
+
+  // متغيرات البحث
+  String _searchQuery = '';
+  final TextEditingController _searchController = TextEditingController();
+  List<Course> _filteredMyCourses = [];
+  List<Course> _filteredAllCourses = [];
 
   // حالات التحميل
   bool _isLoadingMyCourses = true;
@@ -46,6 +52,43 @@ class _CoursesPageState extends State<CoursesPage> {
   void initState() {
     super.initState();
     _loadCoursesData();
+
+    // استمع لتغييرات البحث
+    _searchController.addListener(_onSearchChanged);
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _onSearchChanged() {
+    setState(() {
+      _searchQuery = _searchController.text.toLowerCase();
+      _filterCourses();
+    });
+  }
+
+  void _filterCourses() {
+    if (_searchQuery.isEmpty) {
+      _filteredMyCourses = _myCourses;
+      _filteredAllCourses = _allCourses;
+    } else {
+      _filteredMyCourses = _myCourses
+          .where((course) =>
+              course.displayTitle.toLowerCase().contains(_searchQuery) ||
+              course.displayDescription.toLowerCase().contains(_searchQuery) ||
+              course.displayLevel.toLowerCase().contains(_searchQuery))
+          .toList();
+
+      _filteredAllCourses = _allCourses
+          .where((course) =>
+              course.displayTitle.toLowerCase().contains(_searchQuery) ||
+              course.displayDescription.toLowerCase().contains(_searchQuery) ||
+              course.displayLevel.toLowerCase().contains(_searchQuery))
+          .toList();
+    }
   }
 
   // تحميل بيانات الكورسات
@@ -67,6 +110,9 @@ class _CoursesPageState extends State<CoursesPage> {
           _allCourses = (response['data']['allCourses']['data'] as List)
               .map((courseJson) => Course.fromApi(courseJson))
               .toList();
+
+          // تحديث القوائم المفلترة
+          _filterCourses();
 
           _isLoadingMyCourses = false;
           _isLoadingAllCourses = false;
@@ -122,6 +168,238 @@ class _CoursesPageState extends State<CoursesPage> {
     );
   }
 
+  Widget _buildSearchBar() {
+    final theme = Theme.of(context);
+
+    return Container(
+      decoration: BoxDecoration(
+        color: theme.inputDecorationTheme.fillColor,
+        borderRadius: BorderRadius.circular(10),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 4,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: TextField(
+        controller: _searchController,
+        decoration: InputDecoration(
+          prefixIcon: Icon(
+            Icons.search,
+            color: theme.inputDecorationTheme.hintStyle?.color,
+          ),
+          suffixIcon: _searchQuery.isNotEmpty
+              ? IconButton(
+                  icon: Icon(Icons.clear, color: Colors.grey),
+                  onPressed: () {
+                    _searchController.clear();
+                  },
+                )
+              : null,
+          hintText: 'Search your course...'.tr(),
+          hintStyle: theme.inputDecorationTheme.hintStyle,
+          border: InputBorder.none,
+          contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        ),
+        style: TextStyle(color: theme.textTheme.bodyMedium?.color),
+      ),
+    );
+  }
+
+  Widget _buildSearchResults() {
+    final theme = Theme.of(context);
+    final themeText = theme.textTheme;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
+    int totalResults = _filteredMyCourses.length + _filteredAllCourses.length;
+
+    if (totalResults == 0) {
+      return Container(
+        height: 400,
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.search_off, size: 64, color: Colors.grey),
+              SizedBox(height: 16),
+              Text(
+                'No courses found for "$_searchQuery"'.tr(),
+                style: themeText.titleMedium,
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 8),
+              Text(
+                'Try different keywords or browse all courses'.tr(),
+                style: TextStyle(color: Colors.grey),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  TextButton.icon(
+                    onPressed: () {
+                      _searchController.clear();
+                    },
+                    icon: Icon(Icons.clear),
+                    label: Text('Clear Search'.tr()),
+                  ),
+                  SizedBox(width: 16),
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      setState(() {
+                        _currentIndex = 0;
+                      });
+                      Navigator.pushReplacement(
+                        context,
+                        FadePageRoute(
+                          page: DashboardScreen(
+                            toggleTheme: widget.toggleTheme,
+                            isDarkMode: widget.isDarkMode,
+                          ),
+                        ),
+                      );
+                    },
+                    icon: Icon(Icons.home),
+                    label: Text('Go to Dashboard'.tr()),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // عداد النتائج
+        Container(
+          padding: EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Colors.teal.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Row(
+            children: [
+              Icon(Icons.search, size: 20, color: Colors.teal),
+              SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'Found $totalResults course${totalResults == 1 ? '' : 's'} for "$_searchQuery"',
+                  style: TextStyle(
+                    color: Colors.teal,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              TextButton(
+                onPressed: () {
+                  _searchController.clear();
+                },
+                child: Text('Clear'.tr()),
+              ),
+            ],
+          ),
+        ),
+        SizedBox(height: 20),
+
+        // My Courses Results
+        if (_filteredMyCourses.isNotEmpty) ...[
+          _buildSectionHeader('My Courses'.tr(), _filteredMyCourses.length),
+          SizedBox(height: 12),
+          SizedBox(
+            height: 310,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: _filteredMyCourses.length,
+              itemBuilder: (context, index) {
+                final course = _filteredMyCourses[index];
+                return CourseCard(
+                  image: course.displayImage,
+                  title: course.displayTitle,
+                  rating: course.rating,
+                  details:
+                      '${course.displayLevel} • ${course.lessonsNumber ?? 0} lessons • ${course.displayDuration}',
+                  students: '${course.displayStudents} students',
+                  price: course.isFree
+                      ? 'Free'
+                      : '\$${course.finalPrice.toStringAsFixed(0)}',
+                  onTap: () => _navigateToCourseDetails(course),
+                );
+              },
+            ),
+          ),
+          SizedBox(height: 24),
+        ],
+
+        // All Courses Results
+        if (_filteredAllCourses.isNotEmpty) ...[
+          _buildSectionHeader('All Courses'.tr(), _filteredAllCourses.length),
+          SizedBox(height: 12),
+          GridView.builder(
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 12,
+              childAspectRatio: screenWidth / (screenHeight / 1.4),
+            ),
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: _filteredAllCourses.length,
+            itemBuilder: (context, index) {
+              final course = _filteredAllCourses[index];
+              return AllCourseCard(
+                title: course.displayTitle,
+                image: course.displayImage,
+                rating: course.rating,
+                price: course.isFree
+                    ? 'Free'
+                    : '\$${course.finalPrice.toStringAsFixed(0)}',
+                onTap: () => _navigateToCourseDetails(course),
+              );
+            },
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildSectionHeader(String title, int count) {
+    final theme = Theme.of(context);
+    return Row(
+      children: [
+        Text(
+          title,
+          style: theme.textTheme.titleMedium!.copyWith(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        SizedBox(width: 8),
+        Container(
+          padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+          decoration: BoxDecoration(
+            color: Colors.teal.withOpacity(0.2),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Text(
+            '$count',
+            style: TextStyle(
+              color: Colors.teal,
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -144,51 +422,38 @@ class _CoursesPageState extends State<CoursesPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // شريط البحث
-              Container(
-                decoration: BoxDecoration(
-                  color: theme.inputDecorationTheme.fillColor,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: TextField(
-                  decoration: InputDecoration(
-                    prefixIcon: Icon(Icons.search,
-                        color: theme.inputDecorationTheme.hintStyle?.color),
-                    hintText: 'Search your course...'.tr(),
-                    hintStyle: theme.inputDecorationTheme.hintStyle,
-                    border: InputBorder.none,
-                  ),
-                  style: TextStyle(color: theme.textTheme.bodyMedium?.color),
-                  onChanged: (value) {
-                    // TODO: تطبيق البحث لاحقاً
-                  },
-                ),
-              ),
+              // شريط البحث المحدث
+              _buildSearchBar(),
               const SizedBox(height: 24),
 
-              // My Courses Section
-              Text('My Courses'.tr(),
-                  style: themeText.titleMedium!.copyWith(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  )),
-              const SizedBox(height: 12),
+              // إظهار نتائج البحث أو المحتوى العادي
+              if (_searchQuery.isNotEmpty)
+                _buildSearchResults()
+              else ...[
+                // My Courses Section
+                Text('My Courses'.tr(),
+                    style: themeText.titleMedium!.copyWith(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    )),
+                const SizedBox(height: 12),
 
-              // My Courses Content
-              _buildMyCoursesSection(),
+                // My Courses Content
+                _buildMyCoursesSection(),
 
-              const SizedBox(height: 24),
+                const SizedBox(height: 24),
 
-              // All Courses Section
-              Text('All Courses'.tr(),
-                  style: themeText.titleMedium!.copyWith(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  )),
-              const SizedBox(height: 12),
+                // All Courses Section
+                Text('All Courses'.tr(),
+                    style: themeText.titleMedium!.copyWith(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    )),
+                const SizedBox(height: 12),
 
-              // All Courses Content
-              _buildAllCoursesSection(screenWidth, screenHeight),
+                // All Courses Content
+                _buildAllCoursesSection(screenWidth, screenHeight),
+              ],
             ],
           ),
         ),
