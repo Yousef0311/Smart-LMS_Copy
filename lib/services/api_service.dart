@@ -6,6 +6,7 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smart_lms/config/app_config.dart';
+import 'package:smart_lms/services/secure_storage_service.dart';
 
 class ApiService {
   // استخدام الرابط من ملف الإعدادات
@@ -19,12 +20,11 @@ class ApiService {
     };
 
     if (requiresAuth) {
-      final token = await getToken();
+      final token = await SecureStorageService.getToken(); // 🔴 التغيير هنا
       if (token != null) {
         headers['Authorization'] = 'Bearer $token';
       }
     }
-
     return headers;
   }
 
@@ -79,7 +79,7 @@ class ApiService {
       // تحليل استجابة API
       final data = jsonDecode(response.body);
 
-      // التحقق من حالة الاستجابة
+// التحقق من حالة الاستجابة
       if (response.statusCode >= 200 && response.statusCode < 300) {
         // إذا كان ناجحًا ويجب تخزين البيانات مؤقتًا
         if (useCache && method == 'GET') {
@@ -87,8 +87,18 @@ class ApiService {
         }
         return data;
       } else {
-        throw HttpException(data['message'] ??
-            'Request failed with status: ${response.statusCode}');
+        // معالجة الأخطاء بناءً على status code
+        if (response.statusCode == 401) {
+          await SecureStorageService
+              .clearAuthData(); // أو clearLocalData لو عندك
+          throw Exception('انتهت الجلسة، يرجى تسجيل الدخول مرة أخرى.');
+        } else if (response.statusCode == 404) {
+          throw Exception('المورد غير موجود');
+        } else if (response.statusCode == 500) {
+          throw Exception('خطأ في الخادم، حاول لاحقًا');
+        } else {
+          throw Exception(data['message'] ?? 'حدث خطأ غير متوقع');
+        }
       }
     } catch (e) {
       // التحقق إذا كان الخطأ متعلق بالاتصال
@@ -170,15 +180,16 @@ class ApiService {
       if (data['status'] == true &&
           data['data'] != null &&
           data['data']['token'] != null) {
-        await saveToken(data['data']['token']);
-        await saveUserDataLocally(data['data']);
+        await SecureStorageService.saveToken(data['data']['token']);
+        await SecureStorageService.saveUserData(data['data']);
+        await SecureStorageService.setLoginStatus(true);
       }
 
       return data;
     } catch (e) {
       // التحقق إذا كان هناك بيانات مستخدم محفوظة
-      if (await hasLocalLoginData()) {
-        final userData = await getLocalUserData();
+      if (await SecureStorageService.isLoggedIn()) {
+        final userData = await SecureStorageService.getUserData();
         return {
           "status": true,
           "message": "Using saved login data",
@@ -206,15 +217,15 @@ class ApiService {
       if (data['status'] == true && data['data'] != null) {
         // إذا كان API أرجع توكن، نحفظه
         if (data['data']['token'] != null) {
-          await saveToken(data['data']['token']);
-          await saveUserDataLocally(data['data']);
-        }
-        // إذا كانت البيانات تحتوي على بيانات المستخدم دون توكن
-        else if (data['data']['user'] != null) {
-          await saveUserDataLocally({
+          await SecureStorageService.saveToken(data['data']['token']);
+          await SecureStorageService.saveUserData(data['data']);
+          await SecureStorageService.setLoginStatus(true);
+        } else if (data['data']['user'] != null) {
+          await SecureStorageService.saveUserData({
             'user': data['data']['user'],
             'token': data['data']['token'] ?? ''
           });
+          await SecureStorageService.setLoginStatus(true);
         }
       }
 
@@ -268,7 +279,7 @@ class ApiService {
       print('Logout API response: $result');
 
       // حذف البيانات المحلية بغض النظر عن نتيجة API
-      await clearLocalData();
+      await SecureStorageService.clearAuthData();
 
       return result;
     } catch (e) {
@@ -374,39 +385,25 @@ class ApiService {
 
   // دوال إدارة التوكن والبيانات المحلية
 
-  // حفظ التوكن
-  Future<void> saveToken(String token) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('auth_token', token);
-  }
-
-  // الحصول على التوكن المخزن
   Future<String?> getToken() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString('auth_token');
+    return await SecureStorageService.getToken();
   }
 
-  // حفظ بيانات المستخدم محلياً
-  Future<void> saveUserDataLocally(Map<String, dynamic> userData) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('user_data', jsonEncode(userData));
-    await prefs.setBool('is_logged_in', true);
-  }
-
-  // التحقق إذا كان المستخدم سجل دخول مسبقاً
   Future<bool> hasLocalLoginData() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool('is_logged_in') ?? false;
+    return await SecureStorageService.isLoggedIn();
   }
 
-  // استرجاع بيانات المستخدم المحفوظة
   Future<Map<String, dynamic>?> getLocalUserData() async {
-    final prefs = await SharedPreferences.getInstance();
-    final userData = prefs.getString('user_data');
-    if (userData != null) {
-      return jsonDecode(userData);
-    }
-    return null;
+    return await SecureStorageService.getUserData();
+  }
+
+  Future<void> clearLocalData() async {
+    await SecureStorageService.clearAll();
+  }
+
+// دالة جديدة للتحقق من حالة المصادقة
+  Future<Map<String, dynamic>> getAuthStatus() async {
+    return await SecureStorageService.getStorageStatus();
   }
 
   // دالة عامة للوصول من الخارج
@@ -416,13 +413,5 @@ class ApiService {
       bool useCache = true}) async {
     return await _request(endpoint, method,
         body: body, requiresAuth: requiresAuth, useCache: useCache);
-  }
-
-  // مسح جميع البيانات المحلية
-  Future<void> clearLocalData() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('auth_token');
-    await prefs.remove('user_data');
-    await prefs.remove('is_logged_in');
   }
 }

@@ -153,9 +153,9 @@ class _SplashScreenState extends State<SplashScreen>
               ScaleTransition(
                 scale: _scaleAnimation,
                 child: Image.asset(
-                  'assets/images/logo_edited.png',
-                  width: 180,
-                  height: 180,
+                  'assets/images/logo.png',
+                  width: 280,
+                  height: 280,
                 ),
               ),
               const SizedBox(height: 18),

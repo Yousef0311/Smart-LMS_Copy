@@ -1,3 +1,5 @@
+import 'package:smart_lms/config/app_config.dart';
+
 class Course {
   // الحقول القديمة (للتوافق مع الداش بورد)
   final String title;
@@ -175,19 +177,18 @@ class Course {
     return pivot != null;
   }
 
-  // دالة لإصلاح رابط الصورة
+// إصدار محسن شوية
   String get fixedImageUrl {
     if (courseImage != null && courseImage!.isNotEmpty) {
-      // إصلاح localhost إلى 127.0.0.1:8000
-      String fixedUrl = courseImage!
-          .replaceAll('http://localhost', 'http://127.0.0.1:8000')
-          .replaceAll('https://localhost', 'http://127.0.0.1:8000');
+      String baseUrl = AppConfig.apiBaseUrl.replaceAll('/api', '');
 
-      print('🖼️ Fixed image URL: $fixedUrl');
+      // استبدل localhost بالـ base URL الصحيح
+      String fixedUrl = courseImage!
+          .replaceAll('http://localhost', baseUrl)
+          .replaceAll('https://localhost', baseUrl); // أضف https كمان
+
       return fixedUrl;
     }
-
-    // إذا مفيش صورة من API، استخدم الصورة المحلية
     return imagePath;
   }
 

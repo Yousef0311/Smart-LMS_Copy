@@ -193,8 +193,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   children: [
                     Padding(
                       padding: const EdgeInsets.only(top: 16),
-                      child: Image.asset('assets/images/logo_edited.png',
-                          height: 110),
+                      child: Image.asset('assets/images/logo.png', height: 210),
                     ),
                     const SizedBox(height: 12),
                     const Text(

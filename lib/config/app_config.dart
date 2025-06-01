@@ -1,6 +1,4 @@
-// =====================================================
 // ملف: lib/config/app_config.dart
-// =====================================================
 
 enum Environment { development, staging, production }
 

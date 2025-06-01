@@ -168,7 +168,7 @@ class _LoginPageState extends State<LoginPage>
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Image.asset('assets/images/logo.png', height: 180),
+                  Image.asset('assets/images/logo.png', height: 210),
                   const SizedBox(height: 16),
                   const Text(
                     'Learning Management System',
