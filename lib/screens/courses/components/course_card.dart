@@ -1,5 +1,7 @@
+// lib/screens/courses/components/course_card.dart - نسخة مبسطة للصور المحلية
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:smart_lms/config/app_config.dart';
 
 class CourseCard extends StatelessWidget {
   final String image;
@@ -43,7 +45,7 @@ class CourseCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // صورة الكورس
+            // 🔥 صورة الكورس - نسخة مبسطة للصور المحلية
             ClipRRect(
               borderRadius: BorderRadius.circular(12),
               child: _buildCourseImage(),
@@ -118,84 +120,58 @@ class CourseCard extends StatelessWidget {
     );
   }
 
-  // بناء صورة الكورس
+  // 🔥 دالة مبسطة لبناء صورة الكورس
   Widget _buildCourseImage() {
-    print('🖼️ Loading image: $image');
+    final localImagePath = AppConfig.fixImageUrl(image);
+    print('🖼️ CourseCard - Loading local image: $localImagePath');
 
-    // إذا كانت الصورة من API (تحتوي على http)
-    if (image.startsWith('http')) {
-      return Image.network(
-        image,
-        height: 100,
-        width: double.infinity,
-        fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) {
-          print('❌ Image failed to load: $image');
-          print('Error: $error');
-          return Container(
-            height: 100,
-            width: double.infinity,
-            color: Colors.grey[300],
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.image_not_supported, color: Colors.grey[600]),
-                SizedBox(height: 4),
-                Text(
-                  'Image not available',
-                  style: TextStyle(fontSize: 10, color: Colors.grey[600]),
-                ),
-              ],
+    return Image.asset(
+      localImagePath,
+      height: 100,
+      width: double.infinity,
+      fit: BoxFit.cover,
+      errorBuilder: (context, error, stackTrace) {
+        print('❌ CourseCard - Local image not found: $localImagePath');
+        return _buildFallbackImage();
+      },
+    );
+  }
+
+  // صورة بديلة
+  Widget _buildFallbackImage() {
+    return Container(
+      height: 100,
+      width: double.infinity,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Colors.teal.withOpacity(0.3),
+            Colors.teal.withOpacity(0.1),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.school_outlined,
+            color: Colors.teal,
+            size: 32,
+          ),
+          SizedBox(height: 4),
+          Text(
+            'Course',
+            style: TextStyle(
+              fontSize: 12,
+              color: Colors.teal,
+              fontWeight: FontWeight.w600,
             ),
-          );
-        },
-        loadingBuilder: (context, child, loadingProgress) {
-          if (loadingProgress == null) {
-            print('✅ Image loaded successfully: $image');
-            return child;
-          }
-          return Container(
-            height: 100,
-            width: double.infinity,
-            color: Colors.grey[300],
-            child: Center(
-              child: CircularProgressIndicator(
-                value: loadingProgress.expectedTotalBytes != null
-                    ? loadingProgress.cumulativeBytesLoaded /
-                        loadingProgress.expectedTotalBytes!
-                    : null,
-              ),
-            ),
-          );
-        },
-      );
-    } else {
-      // إذا كانت صورة محلية
-      return Image.asset(
-        image,
-        height: 100,
-        width: double.infinity,
-        fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) {
-          print('❌ Local image not found: $image');
-          return Container(
-            height: 100,
-            width: double.infinity,
-            color: Colors.grey[300],
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.image_not_supported, color: Colors.grey[600]),
-                SizedBox(height: 4),
-                Text(
-                  'Image not found',
-                  style: TextStyle(fontSize: 10, color: Colors.grey[600]),
-                ),
-              ],
-            ),
-          );
-        },
-      );
-    }
+          ),
+        ],
+      ),
+    );
   }
 }

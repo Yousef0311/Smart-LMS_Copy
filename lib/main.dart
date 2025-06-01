@@ -41,11 +41,14 @@ void _setupEnvironmentAutomatically() {
     // إذا كان يعمل على الويب
     AppConfig.setupForWeb();
     print('🌐 تم إعداد التطبيق للويب تلقائياً');
+    print('🔗 API URL: ${AppConfig.apiBaseUrl}');
   } else {
     // إذا كان يعمل على موبايل
-    AppConfig.setupForMobile();
+    AppConfig
+        .setupForMobile(); // 🔥 هيستدعي setupForMobile ويستخدم 192.168.1.19
     print('📱 تم إعداد التطبيق للموبايل تلقائياً');
-    print('📍 IP الموبايل المستخدم: 192.168.1.14');
+    print('📍 IP الموبايل المستخدم: 192.168.1.3');
+    print('🔗 API URL: ${AppConfig.apiBaseUrl}');
   }
 }
 

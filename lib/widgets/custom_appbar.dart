@@ -20,7 +20,7 @@ AppBar customAppBar({
               const SizedBox(width: 8),
               Text(
                 // استخدام اسم المستخدم إذا كان متاحًا، وإلا استخدام "Hello, Guest"
-                'Hello, ${userName ?? "Guest"}'.tr(),
+                'Hello, ${_getFirstName(userName)}'.tr(),
                 style: TextStyle(
                   color: isDarkMode ? Colors.white : Colors.black,
                   fontSize: 19,
@@ -85,6 +85,19 @@ AppBar customAppBar({
           ),
         ],
   );
+}
+
+// وأضف الدالة دي في نفس الملف:
+String _getFirstName(String? fullName) {
+  if (fullName == null || fullName.isEmpty) {
+    return "Guest";
+  }
+
+  // تقسيم الاسم على المسافات
+  List<String> nameParts = fullName.trim().split(' ');
+
+  // إرجاع أول جزء فقط
+  return nameParts.first;
 }
 /*
 import 'package:flutter/material.dart';

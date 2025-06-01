@@ -1,7 +1,8 @@
+// lib/models/course.dart
 import 'package:smart_lms/config/app_config.dart';
 
 class Course {
-  // الحقول القديمة (للتوافق مع الداش بورد)
+  // باقي الحقول زي ما هي...
   final String title;
   final String imagePath;
   final String description;
@@ -12,7 +13,7 @@ class Course {
   final double price;
   final String overview;
 
-  // الحقول الجديدة من API (اختيارية)
+  // الحقول الجديدة من API
   final int? id;
   final String? name;
   final int? majorId;
@@ -30,7 +31,6 @@ class Course {
   final Map<String, dynamic>? pivot;
 
   Course({
-    // الحقول القديمة (مطلوبة)
     required this.title,
     required this.imagePath,
     required this.description,
@@ -40,8 +40,6 @@ class Course {
     required this.students,
     required this.price,
     required this.overview,
-
-    // الحقول الجديدة (اختيارية)
     this.id,
     this.name,
     this.majorId,
@@ -62,7 +60,6 @@ class Course {
   // Constructor للبيانات من API
   factory Course.fromApi(Map<String, dynamic> json) {
     return Course(
-      // تحويل من API format إلى الحقول القديمة
       title: json['name'] ?? '',
       imagePath: json['course_image'] ?? '',
       description: json['description'] ?? '',
@@ -72,8 +69,6 @@ class Course {
       students: json['students_count'] ?? 0,
       price: (json['price'] ?? 0).toDouble(),
       overview: json['bio'] ?? json['description'] ?? '',
-
-      // الحقول الجديدة من API
       id: json['id'],
       name: json['name'],
       majorId: json['major_id'],
@@ -92,7 +87,7 @@ class Course {
     );
   }
 
-  // Constructor للبيانات المحلية (Dashboard)
+  // Constructor للبيانات المحلية
   factory Course.local({
     required String title,
     required String imagePath,
@@ -115,6 +110,74 @@ class Course {
       price: price,
       overview: overview,
     );
+  }
+
+  // دوال مساعدة
+  double get finalPrice {
+    if (discount != null && discount! > 0) {
+      return price - (price * discount! / 100);
+    }
+    return price;
+  }
+
+  bool get isFree => finalPrice == 0;
+  bool get hasDiscount => discount != null && discount! > 0;
+
+  String get enrollmentStatus => pivot?['status'] ?? 'not_enrolled';
+  bool get isEnrolled => pivot != null;
+
+  // 🔥 الحل الجديد لتصحيح روابط الصور باستخدام AppConfig
+  String get fixedImageUrl {
+    // استخدام دالة AppConfig لإصلاح الروابط
+    if (courseImage != null && courseImage!.isNotEmpty) {
+      return AppConfig.fixImageUrl(courseImage);
+    }
+
+    // إذا مفيش courseImage، استخدم imagePath المحلي
+    return imagePath;
+  }
+
+  // الصورة المناسبة للعرض
+  String get displayImage {
+    final fixed = fixedImageUrl;
+    print('🖼️ Display image for ${displayTitle}: $fixed');
+    return fixed;
+  }
+
+  // باقي الـ getters
+  String get displayDuration {
+    if (courseHours != null) {
+      return '${courseHours}h';
+    }
+    return duration;
+  }
+
+  String get displayTitle {
+    if (name != null && name!.isNotEmpty) {
+      return name!;
+    }
+    return title;
+  }
+
+  String get displayDescription {
+    if (bio != null && bio!.isNotEmpty) {
+      return bio!;
+    }
+    return description;
+  }
+
+  String get displayLevel {
+    if (courseLevel != null && courseLevel!.isNotEmpty) {
+      return courseLevel!;
+    }
+    return level;
+  }
+
+  int get displayStudents {
+    if (studentsCount != null) {
+      return studentsCount!;
+    }
+    return students;
   }
 
   // تحويل إلى JSON
@@ -145,95 +208,5 @@ class Course {
       if (updatedAt != null) 'updated_at': updatedAt,
       if (pivot != null) 'pivot': pivot,
     };
-  }
-
-  // دوال مساعدة
-
-  // السعر بعد الخصم
-  double get finalPrice {
-    if (discount != null && discount! > 0) {
-      return price - (price * discount! / 100);
-    }
-    return price;
-  }
-
-  // هل مجاني
-  bool get isFree {
-    return finalPrice == 0;
-  }
-
-  // هل عليه خصم
-  bool get hasDiscount {
-    return discount != null && discount! > 0;
-  }
-
-  // حالة الاشتراك
-  String get enrollmentStatus {
-    return pivot?['status'] ?? 'not_enrolled';
-  }
-
-  // هل مشترك في الكورس
-  bool get isEnrolled {
-    return pivot != null;
-  }
-
-// إصدار محسن شوية
-  String get fixedImageUrl {
-    if (courseImage != null && courseImage!.isNotEmpty) {
-      String baseUrl = AppConfig.apiBaseUrl.replaceAll('/api', '');
-
-      // استبدل localhost بالـ base URL الصحيح
-      String fixedUrl = courseImage!
-          .replaceAll('http://localhost', baseUrl)
-          .replaceAll('https://localhost', baseUrl); // أضف https كمان
-
-      return fixedUrl;
-    }
-    return imagePath;
-  }
-
-  // الصورة المناسبة للعرض - الوحيدة الموجودة
-  String get displayImage {
-    return fixedImageUrl;
-  }
-
-  // المدة المناسبة
-  String get displayDuration {
-    if (courseHours != null) {
-      return '${courseHours}h';
-    }
-    return duration;
-  }
-
-  // العنوان المناسب
-  String get displayTitle {
-    if (name != null && name!.isNotEmpty) {
-      return name!;
-    }
-    return title;
-  }
-
-  // الوصف المناسب
-  String get displayDescription {
-    if (bio != null && bio!.isNotEmpty) {
-      return bio!;
-    }
-    return description;
-  }
-
-  // المستوى المناسب
-  String get displayLevel {
-    if (courseLevel != null && courseLevel!.isNotEmpty) {
-      return courseLevel!;
-    }
-    return level;
-  }
-
-  // عدد الطلاب المناسب
-  int get displayStudents {
-    if (studentsCount != null) {
-      return studentsCount!;
-    }
-    return students;
   }
 }

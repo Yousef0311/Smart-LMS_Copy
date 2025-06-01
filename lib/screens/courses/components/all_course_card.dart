@@ -1,5 +1,7 @@
+// lib/screens/courses/components/all_course_card.dart
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:smart_lms/config/app_config.dart';
 
 class AllCourseCard extends StatelessWidget {
   final String image;
@@ -37,7 +39,7 @@ class AllCourseCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // صورة الكورس
+            // 🔥 صورة الكورس - محلية
             AnimatedOpacity(
               opacity: 1,
               duration: Duration(milliseconds: 500),
@@ -57,9 +59,9 @@ class AllCourseCard extends StatelessWidget {
                 title,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       fontWeight: FontWeight.bold,
-                      fontSize: 15,
+                      fontSize: 14,
                     ),
-                maxLines: 2,
+                maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
             ),
@@ -129,84 +131,57 @@ class AllCourseCard extends StatelessWidget {
     );
   }
 
-  // بناء صورة الكورس
+  // 🔥 دالة بناء صورة الكورس المحلية
   Widget _buildCourseImage() {
-    print('🖼️ Loading image: $image');
+    final localImagePath = AppConfig.fixImageUrl(image);
+    print('🖼️ AllCourseCard - Loading local image: $localImagePath');
 
-    // إذا كانت الصورة من API (تحتوي على http)
-    if (image.startsWith('http')) {
-      return Image.network(
-        image,
-        height: 100,
-        width: double.infinity,
-        fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) {
-          print('❌ Image failed to load: $image');
-          print('Error: $error');
-          return Container(
-            height: 100,
-            width: double.infinity,
-            color: Colors.grey[300],
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.image_not_supported, color: Colors.grey[600]),
-                SizedBox(height: 4),
-                Text(
-                  'Image not available',
-                  style: TextStyle(fontSize: 10, color: Colors.grey[600]),
-                ),
-              ],
+    return Image.asset(
+      localImagePath,
+      height: 100,
+      width: double.infinity,
+      fit: BoxFit.cover,
+      errorBuilder: (context, error, stackTrace) {
+        print('❌ AllCourseCard - Local image not found: $localImagePath');
+        return _buildFallbackImage();
+      },
+    );
+  }
+
+  // صورة بديلة جميلة
+  Widget _buildFallbackImage() {
+    return Container(
+      height: 100,
+      width: double.infinity,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Colors.teal.withOpacity(0.3),
+            Colors.teal.withOpacity(0.1),
+          ],
+        ),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.school_outlined,
+            color: Colors.teal,
+            size: 32,
+          ),
+          SizedBox(height: 4),
+          Text(
+            'Course',
+            style: TextStyle(
+              fontSize: 12,
+              color: Colors.teal,
+              fontWeight: FontWeight.w600,
             ),
-          );
-        },
-        loadingBuilder: (context, child, loadingProgress) {
-          if (loadingProgress == null) {
-            print('✅ Image loaded successfully: $image');
-            return child;
-          }
-          return Container(
-            height: 100,
-            width: double.infinity,
-            color: Colors.grey[300],
-            child: Center(
-              child: CircularProgressIndicator(
-                value: loadingProgress.expectedTotalBytes != null
-                    ? loadingProgress.cumulativeBytesLoaded /
-                        loadingProgress.expectedTotalBytes!
-                    : null,
-              ),
-            ),
-          );
-        },
-      );
-    } else {
-      // إذا كانت صورة محلية
-      return Image.asset(
-        image,
-        height: 100,
-        width: double.infinity,
-        fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) {
-          print('❌ Local image not found: $image');
-          return Container(
-            height: 100,
-            width: double.infinity,
-            color: Colors.grey[300],
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.image_not_supported, color: Colors.grey[600]),
-                SizedBox(height: 4),
-                Text(
-                  'Image not found',
-                  style: TextStyle(fontSize: 10, color: Colors.grey[600]),
-                ),
-              ],
-            ),
-          );
-        },
-      );
-    }
+          ),
+        ],
+      ),
+    );
   }
 }

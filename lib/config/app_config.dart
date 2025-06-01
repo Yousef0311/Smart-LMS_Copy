@@ -1,4 +1,4 @@
-// ملف: lib/config/app_config.dart
+// lib/config/app_config.dart - تحديث IP الموبايل
 
 enum Environment { development, staging, production }
 
@@ -24,12 +24,37 @@ class AppConfig {
   static String _getDevelopmentUrl() {
     switch (currentDevice) {
       case DeviceType.web:
-        return 'http://127.0.0.1:8000/api'; // للويب
+        return 'http://127.0.0.1:8000/api';
       case DeviceType.emulator:
-        return 'http://10.0.2.2:8000/api'; // للأندرويد إيموليتور
+        return 'http://10.0.2.2:8000/api';
       case DeviceType.physicalDevice:
-        return 'http://192.168.1.14:8000/api'; // IP الموبايل الخاص بك
+        return 'http://192.168.1.3:8000/api'; // 🔥 الـ IP الصحيح للموبايل
     }
+  }
+
+  // 🔥 دالة جديدة للصور المحلية - مؤقتة
+  static String fixImageUrl(String? imageUrl) {
+    if (imageUrl == null || imageUrl.isEmpty) {
+      return 'assets/images/default_course.png';
+    }
+
+    print('🔧 AppConfig - Original URL: $imageUrl');
+
+    // استخراج اسم الصورة من الرابط
+    String imageName = _extractImageName(imageUrl);
+    String localPath = 'assets/images/$imageName';
+
+    print('🔧 AppConfig - Using local image: $localPath');
+    return localPath;
+  }
+
+  // استخراج اسم الصورة من الرابط
+  static String _extractImageName(String url) {
+    // إزالة كل شيء قبل اسم الملف
+    if (url.contains('/')) {
+      return url.split('/').last;
+    }
+    return url;
   }
 
   // إعدادات إضافية
@@ -41,12 +66,12 @@ class AppConfig {
   // دوال للتحكم في البيئة ونوع الجهاز
   static void setEnvironment(Environment env) {
     currentEnvironment = env;
-    printCurrentConfig(); // طباعة تلقائية عند التغيير
+    printCurrentConfig();
   }
 
   static void setDeviceType(DeviceType device) {
     currentDevice = device;
-    printCurrentConfig(); // طباعة تلقائية عند التغيير
+    printCurrentConfig();
   }
 
   // إعداد سريع للتطوير
@@ -65,10 +90,9 @@ class AppConfig {
     setDeviceType(DeviceType.emulator);
   }
 
-  // إعداد للإنتاج (الهوست)
+  // إعداد للإنتاج
   static void setupForProduction() {
     setEnvironment(Environment.production);
-    // في الإنتاج، نوع الجهاز لا يهم لأن الرابط ثابت
   }
 
   // إعدادات التطبيق الأخرى
@@ -86,6 +110,7 @@ class AppConfig {
     print('║ Environment: $currentEnvironment');
     print('║ Device Type: $currentDevice');
     print('║ API Base URL: $apiBaseUrl');
+    print('║ Using Local Images: TRUE');
     print('║ Offline Mode: $enableOfflineMode');
     print('║ Use HTTPS: $useHttps');
     print('╚════════════════════════════════════╝');
@@ -94,8 +119,10 @@ class AppConfig {
   // دالة للتحقق من صحة الإعدادات
   static bool validateConfig() {
     try {
-      final url = apiBaseUrl;
-      print('✅ Configuration is valid. API URL: $url');
+      final apiUrl = apiBaseUrl;
+      print('✅ Configuration is valid.');
+      print('✅ API URL: $apiUrl');
+      print('✅ Using local images from assets/');
       return true;
     } catch (e) {
       print('❌ Configuration error: $e');

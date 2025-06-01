@@ -1,4 +1,6 @@
+// lib/screens/dashboard/components/continue_watching_card.dart
 import 'package:flutter/material.dart';
+import 'package:smart_lms/config/app_config.dart';
 import 'package:smart_lms/models/course.dart';
 import 'package:smart_lms/screens/dashboard/components/course_details_page.dart';
 
@@ -32,6 +34,13 @@ class ContinueWatchingCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: Theme.of(context).cardColor,
           borderRadius: BorderRadius.circular(10),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.2),
+              blurRadius: 4,
+              spreadRadius: 1,
+            ),
+          ],
         ),
         child: Column(
           children: [
@@ -55,97 +64,60 @@ class ContinueWatchingCard extends StatelessWidget {
     );
   }
 
+  // 🔥 دالة بناء صورة الكورس المحلية
   Widget _buildCourseImage() {
-    // استخدام displayImage من Course model اللي بيدعم network و local images
     final imageUrl = course.displayImage;
+    final localImagePath = AppConfig.fixImageUrl(imageUrl);
 
-    print('🖼️ Loading image for ${course.displayTitle}: $imageUrl');
+    print(
+        '🖼️ ContinueWatching - Loading local image for ${course.displayTitle}: $localImagePath');
 
-    // إذا كانت الصورة من API (تحتوي على http)
-    if (imageUrl.startsWith('http')) {
-      return Image.network(
-        imageUrl,
-        height: 120,
-        width: 140,
-        fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) {
-          print('❌ Network image failed to load: $imageUrl');
-          print('Error: $error');
-          // في حالة فشل تحميل الصورة من النت، استخدم الصورة المحلية
-          return Image.asset(
-            course.imagePath,
-            height: 120,
-            width: 140,
-            fit: BoxFit.cover,
-            errorBuilder: (context, error, stackTrace) {
-              // إذا فشلت الصورة المحلية أيضاً، اعرض placeholder
-              return Container(
-                height: 120,
-                width: 140,
-                color: Colors.grey[300],
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.image_not_supported, color: Colors.grey[600]),
-                    SizedBox(height: 4),
-                    Text(
-                      'No Image',
-                      style: TextStyle(fontSize: 10, color: Colors.grey[600]),
-                    ),
-                  ],
-                ),
-              );
-            },
-          );
-        },
-        loadingBuilder: (context, child, loadingProgress) {
-          if (loadingProgress == null) {
-            print('✅ Network image loaded successfully: $imageUrl');
-            return child;
-          }
-          return Container(
-            height: 120,
-            width: 140,
-            color: Colors.grey[300],
-            child: Center(
-              child: CircularProgressIndicator(
-                value: loadingProgress.expectedTotalBytes != null
-                    ? loadingProgress.cumulativeBytesLoaded /
-                        loadingProgress.expectedTotalBytes!
-                    : null,
-                strokeWidth: 2,
-              ),
+    return Image.asset(
+      localImagePath,
+      height: 120,
+      width: 140,
+      fit: BoxFit.cover,
+      errorBuilder: (context, error, stackTrace) {
+        print('❌ ContinueWatching - Local image not found: $localImagePath');
+        return _buildFallbackImage();
+      },
+    );
+  }
+
+  // صورة بديلة جميلة
+  Widget _buildFallbackImage() {
+    return Container(
+      height: 120,
+      width: 140,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Colors.teal.withOpacity(0.3),
+            Colors.teal.withOpacity(0.1),
+          ],
+        ),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.play_circle_outline,
+            color: Colors.teal,
+            size: 32,
+          ),
+          SizedBox(height: 4),
+          Text(
+            'Continue',
+            style: TextStyle(
+              fontSize: 10,
+              color: Colors.teal,
+              fontWeight: FontWeight.w600,
             ),
-          );
-        },
-      );
-    } else {
-      // إذا كانت صورة محلية
-      return Image.asset(
-        imageUrl,
-        height: 120,
-        width: 140,
-        fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) {
-          print('❌ Local image not found: $imageUrl');
-          return Container(
-            height: 120,
-            width: 140,
-            color: Colors.grey[300],
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.image_not_supported, color: Colors.grey[600]),
-                SizedBox(height: 4),
-                Text(
-                  'Image not found',
-                  style: TextStyle(fontSize: 10, color: Colors.grey[600]),
-                ),
-              ],
-            ),
-          );
-        },
-      );
-    }
+          ),
+        ],
+      ),
+    );
   }
 }
