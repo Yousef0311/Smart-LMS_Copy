@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:smart_lms/screens/splash_screen.dart';
 import 'package:smart_lms/themes/dark_theme.dart';
 import 'package:smart_lms/themes/light_theme.dart';
+import 'package:smart_lms/utils/connectivity_helper.dart';
 
 import 'config/app_config.dart';
 
@@ -21,6 +22,9 @@ void main() async {
   if (!AppConfig.validateConfig()) {
     print('⚠️ خطأ في إعدادات التطبيق');
   }
+// 🔥 إعداد مراقب الاتصال بالإنترنت
+  ConnectivityHelper.setupGlobalConnectivityListener();
+  print('📡 Connectivity monitoring started');
 
   runApp(
     EasyLocalization(

@@ -1,4 +1,7 @@
-// lib/services/dashboard_service.dart
+// lib/services/dashboard_service.dart - Enhanced with offline support
+import 'dart:convert';
+
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smart_lms/models/course.dart';
 import 'package:smart_lms/services/api_service.dart';
 import 'package:smart_lms/services/courses_service.dart';
@@ -6,6 +9,10 @@ import 'package:smart_lms/services/courses_service.dart';
 class DashboardService {
   final CoursesService _coursesService = CoursesService();
   final ApiService _apiService = ApiService();
+
+  // Cache keys
+  static const String _assignmentStatsKey = 'cached_assignment_stats';
+  static const String _assignmentTimestampKey = 'assignment_cache_timestamp';
 
   // جلب الكورسات المشترك فيها للـ Dashboard
   Future<List<Course>> getMyCourses() async {
@@ -47,7 +54,7 @@ class DashboardService {
     }
   }
 
-  // جلب بيانات الـ Assignments
+  // جلب بيانات الـ Assignments مع دعم offline
   Future<Map<String, dynamic>> getAssignmentStats() async {
     try {
       final response = await _apiService.request('assignment/', 'GET');
@@ -92,15 +99,85 @@ class DashboardService {
               '$notSubmittedAssignments of $totalAssignments tasks left',
         };
 
+        // 🔥 حفظ البيانات للـ offline mode
+        await _saveAssignmentStatsToCache(stats);
+
         print('📊 Assignment Stats: $stats');
         return stats;
       }
 
       throw Exception('Invalid assignment data format');
     } catch (e) {
-      print('❌ Error loading assignment stats: $e');
-      // إرجاع بيانات افتراضية في حالة الخطأ
+      print('❌ Error loading assignment stats from API: $e');
+
+      // 🔥 محاولة تحميل البيانات من Cache
+      final cachedStats = await _loadCachedAssignmentStats();
+      if (cachedStats != null) {
+        print('📱 Using cached assignment stats (offline mode)');
+        return {
+          ...cachedStats,
+          'isOfflineMode': true,
+        };
+      }
+
+      // إرجاع بيانات افتراضية في حالة عدم وجود cache
       return _getDefaultAssignmentStats();
+    }
+  }
+
+  // حفظ إحصائيات المهام للـ cache
+  Future<void> _saveAssignmentStatsToCache(Map<String, dynamic> stats) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final timestamp = DateTime.now().millisecondsSinceEpoch;
+
+      await prefs.setString(_assignmentStatsKey, jsonEncode(stats));
+      await prefs.setInt(_assignmentTimestampKey, timestamp);
+
+      print('💾 Assignment stats cached successfully');
+    } catch (e) {
+      print('❌ Error caching assignment stats: $e');
+    }
+  }
+
+  // تحميل إحصائيات المهام من Cache
+  Future<Map<String, dynamic>?> _loadCachedAssignmentStats() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+
+      final statsJson = prefs.getString(_assignmentStatsKey);
+      final timestamp = prefs.getInt(_assignmentTimestampKey);
+
+      if (statsJson == null || timestamp == null) {
+        return null;
+      }
+
+      // التحقق من صلاحية البيانات (3 أيام للـ assignments)
+      final now = DateTime.now().millisecondsSinceEpoch;
+      final cacheDuration = 3 * 24 * 60 * 60 * 1000;
+
+      if (now - timestamp > cacheDuration) {
+        print('📅 Cached assignment stats expired');
+        await _clearAssignmentStatsCache();
+        return null;
+      }
+
+      return jsonDecode(statsJson);
+    } catch (e) {
+      print('❌ Error loading cached assignment stats: $e');
+      return null;
+    }
+  }
+
+  // مسح cache إحصائيات المهام
+  Future<void> _clearAssignmentStatsCache() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(_assignmentStatsKey);
+      await prefs.remove(_assignmentTimestampKey);
+      print('🧹 Assignment stats cache cleared');
+    } catch (e) {
+      print('❌ Error clearing assignment stats cache: $e');
     }
   }
 
@@ -137,6 +214,7 @@ class DashboardService {
       'grade': 'C-',
       'status': 'Fair',
       'pending_text': '3 of 5 tasks left',
+      'isOfflineMode': true,
     };
   }
 

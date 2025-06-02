@@ -572,40 +572,46 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget _buildMyCoursesSection() {
     if (_isLoadingDashboard) {
       return Container(
-        height: 180,
+        height: 120,
         child: Center(child: CircularProgressIndicator()),
       );
     }
 
     if (_myCourses.isEmpty) {
       return Container(
-        height: 180,
+        height: 120,
         child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.school_outlined, size: 48, color: Colors.grey),
-              SizedBox(height: 8),
+              Icon(Icons.school_outlined,
+                  size: 40, color: Colors.grey), // 🔥 قللنا حجم الأيقونة
+              SizedBox(height: 6), // 🔥 قللنا المسافة
               Text('No enrolled courses yet'.tr()),
-              SizedBox(height: 8),
+              SizedBox(height: 4), // 🔥 قللنا المسافة
               Text('Browse available courses'.tr(),
-                  style: TextStyle(color: Colors.grey)),
+                  style: TextStyle(color: Colors.grey, fontSize: 12)),
             ],
           ),
         ),
       );
     }
 
+    // 🔥 حساب الارتفاع المطلوب بناءً على عدد الكورسات
+    final coursesCount = _myCourses.length.clamp(0, 4);
+    final rows = (coursesCount / 2).ceil(); // عدد الصفوف (كل صف فيه كورسين)
+    final dynamicHeight = (rows * 85.0).clamp(85.0, 170.0); // ارتفاع ديناميكي
+
     return SizedBox(
-      height: 180,
+      height: dynamicHeight, // 🔥 استخدام الارتفاع الديناميكي
       child: GridView.builder(
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
           crossAxisSpacing: 10,
           mainAxisSpacing: 10,
-          childAspectRatio: 2.2,
+          childAspectRatio: 2, // 🔥 زودنا النسبة علشان الكارد يبقى أقصر
         ),
-        itemCount: _myCourses.length.clamp(0, 4),
+        itemCount: coursesCount,
         physics: const NeverScrollableScrollPhysics(),
         itemBuilder: (context, index) {
           final course = _myCourses[index];

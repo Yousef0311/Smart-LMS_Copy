@@ -8,7 +8,7 @@ AppBar customAppBar({
   required VoidCallback toggleTheme,
   bool showGreeting = false,
   List<Widget>? actions,
-  String? userName, // إضافة معامل اسم المستخدم
+  String? userName,
 }) {
   return AppBar(
     elevation: 0,
@@ -18,13 +18,14 @@ AppBar customAppBar({
             children: [
               Image.asset('assets/images/logo.png', height: 55),
               const SizedBox(width: 8),
-              Text(
-                // استخدام اسم المستخدم إذا كان متاحًا، وإلا استخدام "Hello, Guest"
-                'Hello, ${_getFirstName(userName)}'.tr(),
-                style: TextStyle(
-                  color: isDarkMode ? Colors.white : Colors.black,
-                  fontSize: 19,
-                  fontWeight: FontWeight.bold,
+              Expanded(
+                child: Text(
+                  'Hello, ${_getFirstName(userName)}'.tr(),
+                  style: TextStyle(
+                    color: isDarkMode ? Colors.white : Colors.black,
+                    fontSize: 19,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ],
@@ -32,6 +33,25 @@ AppBar customAppBar({
         : Text('Smart LMS'.tr()),
     actions: actions ??
         [
+          // 🔥 زر حالة الاتصال (جديد)
+          // FutureBuilder<bool>(
+          //   future: ConnectivityHelper.isConnected(),
+          //   builder: (context, snapshot) {
+          //     final isOnline = snapshot.data ?? true;
+          //     return IconButton(
+          //       icon: Icon(
+          //         isOnline ? Icons.wifi : Icons.wifi_off,
+          //         color: isOnline
+          //             ? (isDarkMode ? Colors.green : Colors.black)
+          //             : Colors.red,
+          //       ),
+          //       onPressed: () =>
+          //           ConnectivityHelper.showConnectivityStatus(context),
+          //       tooltip: isOnline ? 'Online'.tr() : 'Offline'.tr(),
+          //     );
+          //   },
+          // ),
+
           // زر تغيير اللغة
           IconButton(
             icon: Icon(
@@ -39,14 +59,12 @@ AppBar customAppBar({
               color: isDarkMode ? Colors.white : Colors.black,
             ),
             onPressed: () {
-              // تغيير اللغة بدون تغيير الصفحة الحالية
               if (context.locale == const Locale('en')) {
                 context.setLocale(const Locale('ar'));
               } else {
                 context.setLocale(const Locale('en'));
               }
 
-              // إظهار رسالة تأكيد تغيير اللغة
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text('Change Language'.tr()),
@@ -55,6 +73,7 @@ AppBar customAppBar({
               );
             },
           ),
+
           // زر تبديل الثيم
           IconButton(
             icon: Icon(
@@ -63,6 +82,8 @@ AppBar customAppBar({
             ),
             onPressed: toggleTheme,
           ),
+
+          // صورة البروفايل
           Padding(
             padding: const EdgeInsetsDirectional.only(end: 12.0),
             child: GestureDetector(
@@ -87,16 +108,12 @@ AppBar customAppBar({
   );
 }
 
-// وأضف الدالة دي في نفس الملف:
 String _getFirstName(String? fullName) {
   if (fullName == null || fullName.isEmpty) {
     return "Guest";
   }
 
-  // تقسيم الاسم على المسافات
   List<String> nameParts = fullName.trim().split(' ');
-
-  // إرجاع أول جزء فقط
   return nameParts.first;
 }
 /*
