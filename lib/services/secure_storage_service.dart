@@ -16,7 +16,8 @@ class SecureStorageService {
   static const String _refreshTokenKey = 'refresh_token';
   static const String _loginStatusKey = 'is_logged_in';
   static const String _biometricKey = 'biometric_enabled';
-
+  static const String _offlineEmailKey = 'offline_email';
+  static const String _offlinePasswordHashKey = 'offline_password_hash';
   // ═══════════════════════════════════════════════════════════
   // 🔑 إدارة التوكن
   // ═══════════════════════════════════════════════════════════
@@ -60,6 +61,66 @@ class SecureStorageService {
   static Future<bool> hasValidToken() async {
     final token = await getToken();
     return token != null && token.isNotEmpty;
+  }
+// ═══════════════════════════════════════════════════════════
+  // 🔐 إدارة بيانات تسجيل الدخول للـ Offline Mode
+  // ═══════════════════════════════════════════════════════════
+
+  /// حفظ بيانات تسجيل الدخول للـ offline mode
+  static Future<void> saveOfflineCredentials(
+      String email, String passwordHash) async {
+    try {
+      await _storage.write(key: _offlineEmailKey, value: email);
+      await _storage.write(key: _offlinePasswordHashKey, value: passwordHash);
+      print('✅ Offline credentials saved securely');
+    } catch (e) {
+      print('❌ Error saving offline credentials: $e');
+      throw Exception('Failed to save offline credentials');
+    }
+  }
+
+  /// الحصول على بيانات تسجيل الدخول المحفوظة
+  static Future<Map<String, String>?> getOfflineCredentials() async {
+    try {
+      final email = await _storage.read(key: _offlineEmailKey);
+      final passwordHash = await _storage.read(key: _offlinePasswordHashKey);
+
+      if (email != null && passwordHash != null) {
+        print('✅ Offline credentials retrieved successfully');
+        return {
+          'email': email,
+          'passwordHash': passwordHash,
+        };
+      }
+
+      return null;
+    } catch (e) {
+      print('❌ Error getting offline credentials: $e');
+      return null;
+    }
+  }
+
+  /// حذف بيانات تسجيل الدخول المحفوظة
+  static Future<void> deleteOfflineCredentials() async {
+    try {
+      await _storage.delete(key: _offlineEmailKey);
+      await _storage.delete(key: _offlinePasswordHashKey);
+      print('✅ Offline credentials deleted successfully');
+    } catch (e) {
+      print('❌ Error deleting offline credentials: $e');
+    }
+  }
+
+  /// التحقق من وجود بيانات تسجيل دخول محفوظة
+  static Future<bool> hasOfflineCredentials() async {
+    try {
+      final email = await _storage.read(key: _offlineEmailKey);
+      final passwordHash = await _storage.read(key: _offlinePasswordHashKey);
+      return email != null && passwordHash != null;
+    } catch (e) {
+      print('❌ Error checking offline credentials: $e');
+      return false;
+    }
   }
 
   // ═══════════════════════════════════════════════════════════
@@ -196,7 +257,8 @@ class SecureStorageService {
   static Future<void> clearAll() async {
     try {
       await _storage.deleteAll();
-      print('✅ All secure data cleared successfully');
+      print(
+          '✅ All secure data cleared successfully (including offline credentials)');
     } catch (e) {
       print('❌ Error clearing all data: $e');
     }
@@ -208,9 +270,10 @@ class SecureStorageService {
       await Future.wait([
         deleteToken(),
         deleteRefreshToken(),
+        deleteOfflineCredentials(), // 🔥 إضافة جديدة
         setLoginStatus(false),
       ]);
-      print('✅ Auth data cleared successfully');
+      print('✅ Auth data cleared successfully (including offline credentials)');
     } catch (e) {
       print('❌ Error clearing auth data: $e');
     }

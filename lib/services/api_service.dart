@@ -161,7 +161,7 @@ class ApiService {
 
   // دوال المصادقة
 
-  // تسجيل الدخول
+  // تسجيل الدخول - النسخة المُحدثة
   Future<Map<String, dynamic>> login(String email, String password) async {
     try {
       final data = await _request(
@@ -183,12 +183,15 @@ class ApiService {
         await SecureStorageService.saveToken(data['data']['token']);
         await SecureStorageService.saveUserData(data['data']);
         await SecureStorageService.setLoginStatus(true);
+
+        // 🔥 حفظ بيانات تسجيل الدخول للـ offline mode
+        await _saveOfflineLoginCredentials(email, password);
       }
 
       return data;
     } catch (e) {
-      // التحقق إذا كان هناك بيانات مستخدم محفوظة
-      if (await SecureStorageService.isLoggedIn()) {
+      // 🔥 التحقق من بيانات الدخول في الـ offline mode
+      if (await _validateOfflineLogin(email, password)) {
         final userData = await SecureStorageService.getUserData();
         return {
           "status": true,
@@ -198,8 +201,64 @@ class ApiService {
         };
       }
 
-      rethrow;
+      // إذا لم تتطابق البيانات، رفض تسجيل الدخول
+      throw Exception('Incorrect email or password');
     }
+  }
+
+// 🔥 دالة جديدة - حفظ بيانات تسجيل الدخول للـ offline mode
+  Future<void> _saveOfflineLoginCredentials(
+      String email, String password) async {
+    try {
+      // تشفير بسيط للباسورد (يمكن تحسينه لاحقاً)
+      final hashedPassword = _simpleHash(password);
+
+      await SecureStorageService.saveOfflineCredentials(email, hashedPassword);
+      print('🔐 Offline credentials saved for: $email');
+    } catch (e) {
+      print('❌ Error saving offline credentials: $e');
+    }
+  }
+
+// 🔥 دالة جديدة - التحقق من بيانات الدخول في الـ offline mode
+  Future<bool> _validateOfflineLogin(String email, String password) async {
+    try {
+      final savedCredentials =
+          await SecureStorageService.getOfflineCredentials();
+
+      if (savedCredentials == null) {
+        print('🔍 No offline credentials found');
+        return false;
+      }
+
+      final savedEmail = savedCredentials['email'];
+      final savedPasswordHash = savedCredentials['passwordHash'];
+      final inputPasswordHash = _simpleHash(password);
+
+      final isValid =
+          savedEmail == email && savedPasswordHash == inputPasswordHash;
+
+      print(
+          '🔐 Offline login validation: ${isValid ? "✅ Valid" : "❌ Invalid"}');
+      print('   - Email match: ${savedEmail == email}');
+      print('   - Password match: ${savedPasswordHash == inputPasswordHash}');
+
+      return isValid;
+    } catch (e) {
+      print('❌ Error validating offline login: $e');
+      return false;
+    }
+  }
+
+// 🔥 دالة مساعدة - تشفير بسيط للباسورد
+  String _simpleHash(String input) {
+    // تشفير بسيط - يمكن تحسينه باستخدام crypto package لاحقاً
+    int hash = 0;
+    for (int i = 0; i < input.length; i++) {
+      hash = ((hash << 5) - hash) + input.codeUnitAt(i);
+      hash = hash & hash; // Convert to 32-bit integer
+    }
+    return hash.abs().toString();
   }
 
   // تسجيل مستخدم جديد - دالة معدلة

@@ -1,4 +1,4 @@
-// lib/config/app_config.dart - تحديث IP الموبايل
+// lib/config/app_config.dart - حل مشكلة البطء
 
 enum Environment { development, staging, production }
 
@@ -28,7 +28,7 @@ class AppConfig {
       case DeviceType.emulator:
         return 'http://10.0.2.2:8000/api';
       case DeviceType.physicalDevice:
-        return 'http://192.168.1.17:8000/api'; // 🔥 الـ IP الصحيح للموبايل
+        return 'http://192.168.1.17:8000/api';
     }
   }
 
@@ -98,7 +98,10 @@ class AppConfig {
   // إعدادات التطبيق الأخرى
   static const String appName = "Smart LMS";
   static const String appVersion = "1.0.0";
-  static const int apiTimeoutSeconds = 30;
+
+  // 🔥 الحل البسيط: تقليل timeout من 30 إلى 6 ثوانٍ
+  static const int apiTimeoutSeconds = 6; // كان 30
+
   static const bool enableOfflineMode = true;
   static const int cacheDurationDays = 7;
 
@@ -110,6 +113,7 @@ class AppConfig {
     print('║ Environment: $currentEnvironment');
     print('║ Device Type: $currentDevice');
     print('║ API Base URL: $apiBaseUrl');
+    print('║ API Timeout: ${apiTimeoutSeconds}s'); // 🔥 إضافة جديدة
     print('║ Using Local Images: TRUE');
     print('║ Offline Mode: $enableOfflineMode');
     print('║ Use HTTPS: $useHttps');
@@ -122,6 +126,7 @@ class AppConfig {
       final apiUrl = apiBaseUrl;
       print('✅ Configuration is valid.');
       print('✅ API URL: $apiUrl');
+      print('✅ Timeout: ${apiTimeoutSeconds}s'); // 🔥 إضافة جديدة
       print('✅ Using local images from assets/');
       return true;
     } catch (e) {
