@@ -75,7 +75,7 @@ void _setupEnvironmentAutomatically() {
   } else {
     AppConfig.setupForMobile();
     print('📱 تم إعداد التطبيق للموبايل تلقائياً');
-    print('📍 IP الموبايل المستخدم: 192.168.1.3');
+    print('📍 IP الموبايل المستخدم:17192.168.1.17');
     print('🔗 API URL: ${AppConfig.apiBaseUrl}');
   }
 }
