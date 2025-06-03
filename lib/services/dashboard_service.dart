@@ -1,4 +1,4 @@
-// lib/services/dashboard_service.dart - Enhanced with offline support
+// lib/services/dashboard_service.dart - Enhanced with default data
 import 'dart:convert';
 
 import 'package:shared_preferences/shared_preferences.dart';
@@ -14,6 +14,18 @@ class DashboardService {
   static const String _assignmentStatsKey = 'cached_assignment_stats';
   static const String _assignmentTimestampKey = 'assignment_cache_timestamp';
 
+  // 🔥 بيانات افتراضية للـ assignments
+  static final Map<String, dynamic> _defaultAssignmentStats = {
+    'total_assignments': 8,
+    'submitted_assignments': 5,
+    'not_submitted_assignments': 3,
+    'completion_rate': 62.5,
+    'grade': 'B-',
+    'status': 'Good Progress',
+    'pending_text': '3 of 8 tasks left',
+    'isDefaultData': true,
+  };
+
   // جلب الكورسات المشترك فيها للـ Dashboard
   Future<List<Course>> getMyCourses() async {
     try {
@@ -26,11 +38,10 @@ class DashboardService {
     }
   }
 
-  // جلب كورسات Continue Watching (نفس My Courses بس أول 3)
+  // جلب كورسات Continue Watching
   Future<List<Course>> getContinueWatchingCourses() async {
     try {
       final myCourses = await getMyCourses();
-      // ناخد أول 3 كورسات أو كلهم لو أقل من 3
       final continueWatching = myCourses.take(3).toList();
       print('👀 Continue Watching: ${continueWatching.length}');
       return continueWatching;
@@ -40,11 +51,10 @@ class DashboardService {
     }
   }
 
-  // جلب الكورسات الموصى بها (من All Courses)
+  // جلب الكورسات الموصى بها
   Future<List<Course>> getRecommendedCourses() async {
     try {
       final allCourses = await _coursesService.getAvailableCourses();
-      // ناخد أول 3 كورسات من الـ available courses
       final recommended = allCourses.take(3).toList();
       print('⭐ Recommended Courses: ${recommended.length}');
       return recommended;
@@ -54,55 +64,19 @@ class DashboardService {
     }
   }
 
-  // جلب بيانات الـ Assignments مع دعم offline
+  // 🔥 جلب بيانات الـ Assignments مع دعم offline محسن
   Future<Map<String, dynamic>> getAssignmentStats() async {
     try {
+      // جرب الـ API الأول
       final response = await _apiService.request('assignment/', 'GET');
 
       if (response['success'] == true && response['data'] != null) {
         final assignmentData = response['data'] as List;
+        final stats = _calculateAssignmentStats(assignmentData);
 
-        // حساب الإحصائيات
-        int totalAssignments = 0;
-        int submittedAssignments = 0;
-        int notSubmittedAssignments = 0;
-
-        for (var courseData in assignmentData) {
-          final assignments = courseData['assignments'] as List;
-          for (var assignment in assignments) {
-            totalAssignments++;
-            if (assignment['status'] == 'submitted') {
-              submittedAssignments++;
-            } else {
-              notSubmittedAssignments++;
-            }
-          }
-        }
-
-        // حساب النسبة المئوية
-        double completionRate = totalAssignments > 0
-            ? (submittedAssignments / totalAssignments) * 100
-            : 0.0;
-
-        // تحديد الـ grade والـ status بناءً على النسبة
-        String grade = _calculateGrade(completionRate);
-        String status = _getGradeStatus(completionRate);
-
-        final stats = {
-          'total_assignments': totalAssignments,
-          'submitted_assignments': submittedAssignments,
-          'not_submitted_assignments': notSubmittedAssignments,
-          'completion_rate': completionRate,
-          'grade': grade,
-          'status': status,
-          'pending_text':
-              '$notSubmittedAssignments of $totalAssignments tasks left',
-        };
-
-        // 🔥 حفظ البيانات للـ offline mode
+        // حفظ البيانات للـ offline mode
         await _saveAssignmentStatsToCache(stats);
-
-        print('📊 Assignment Stats: $stats');
+        print('📊 Assignment Stats from API: $stats');
         return stats;
       }
 
@@ -110,7 +84,7 @@ class DashboardService {
     } catch (e) {
       print('❌ Error loading assignment stats from API: $e');
 
-      // 🔥 محاولة تحميل البيانات من Cache
+      // 🔥 جرب البيانات المحفوظة
       final cachedStats = await _loadCachedAssignmentStats();
       if (cachedStats != null) {
         print('📱 Using cached assignment stats (offline mode)');
@@ -120,12 +94,72 @@ class DashboardService {
         };
       }
 
-      // إرجاع بيانات افتراضية في حالة عدم وجود cache
-      return _getDefaultAssignmentStats();
+      // 🔥 استخدم البيانات الافتراضية
+      print('🎯 Using default assignment stats for demo');
+      await _saveAssignmentStatsToCache(_defaultAssignmentStats);
+      return {
+        ..._defaultAssignmentStats,
+        'isOfflineMode': true,
+        'message': 'Showing demo data - connect to internet for real stats'
+      };
     }
   }
 
-  // حفظ إحصائيات المهام للـ cache
+  // 🔥 حساب إحصائيات المهام
+  Map<String, dynamic> _calculateAssignmentStats(List assignmentData) {
+    int totalAssignments = 0;
+    int submittedAssignments = 0;
+    int notSubmittedAssignments = 0;
+
+    for (var courseData in assignmentData) {
+      final assignments = courseData['assignments'] as List;
+      for (var assignment in assignments) {
+        totalAssignments++;
+        if (assignment['status'] == 'submitted') {
+          submittedAssignments++;
+        } else {
+          notSubmittedAssignments++;
+        }
+      }
+    }
+
+    double completionRate = totalAssignments > 0
+        ? (submittedAssignments / totalAssignments) * 100
+        : 0.0;
+
+    String grade = _calculateGrade(completionRate);
+    String status = _getGradeStatus(completionRate);
+
+    return {
+      'total_assignments': totalAssignments,
+      'submitted_assignments': submittedAssignments,
+      'not_submitted_assignments': notSubmittedAssignments,
+      'completion_rate': completionRate,
+      'grade': grade,
+      'status': status,
+      'pending_text':
+          '$notSubmittedAssignments of $totalAssignments tasks left',
+    };
+  }
+
+  // 🔥 إعداد البيانات الأولية للـ assignments
+  Future<void> initializeDefaultAssignmentData() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final hasData = prefs.containsKey(_assignmentStatsKey);
+
+      if (!hasData) {
+        print('🚀 Initializing app with default assignment data');
+        await _saveAssignmentStatsToCache(_defaultAssignmentStats);
+      } else {
+        print('✅ App already has assignment data');
+      }
+    } catch (e) {
+      print('❌ Error initializing assignment data: $e');
+    }
+  }
+
+  // باقي الدوال كما هي...
   Future<void> _saveAssignmentStatsToCache(Map<String, dynamic> stats) async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -140,7 +174,6 @@ class DashboardService {
     }
   }
 
-  // تحميل إحصائيات المهام من Cache
   Future<Map<String, dynamic>?> _loadCachedAssignmentStats() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -148,18 +181,19 @@ class DashboardService {
       final statsJson = prefs.getString(_assignmentStatsKey);
       final timestamp = prefs.getInt(_assignmentTimestampKey);
 
-      if (statsJson == null || timestamp == null) {
+      if (statsJson == null) {
         return null;
       }
 
-      // التحقق من صلاحية البيانات (3 أيام للـ assignments)
-      final now = DateTime.now().millisecondsSinceEpoch;
-      final cacheDuration = 3 * 24 * 60 * 60 * 1000;
+      // 🔥 خلي البيانات تشتغل حتى لو قديمة (للعرض)
+      if (timestamp != null) {
+        final now = DateTime.now().millisecondsSinceEpoch;
+        final ageHours = ((now - timestamp) / (1000 * 60 * 60)).round();
 
-      if (now - timestamp > cacheDuration) {
-        print('📅 Cached assignment stats expired');
-        await _clearAssignmentStatsCache();
-        return null;
+        if (ageHours > 72) {
+          // 3 أيام
+          print('⚠️ Assignment stats are ${ageHours}h old but still usable');
+        }
       }
 
       return jsonDecode(statsJson);
@@ -169,19 +203,6 @@ class DashboardService {
     }
   }
 
-  // مسح cache إحصائيات المهام
-  Future<void> _clearAssignmentStatsCache() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.remove(_assignmentStatsKey);
-      await prefs.remove(_assignmentTimestampKey);
-      print('🧹 Assignment stats cache cleared');
-    } catch (e) {
-      print('❌ Error clearing assignment stats cache: $e');
-    }
-  }
-
-  // حساب الدرجة بناءً على نسبة الإنجاز
   String _calculateGrade(double completionRate) {
     if (completionRate >= 90) return 'A+';
     if (completionRate >= 85) return 'A';
@@ -195,27 +216,12 @@ class DashboardService {
     return 'D';
   }
 
-  // تحديد حالة الدرجة
   String _getGradeStatus(double completionRate) {
     if (completionRate >= 80) return 'Excellent';
     if (completionRate >= 70) return 'Good';
     if (completionRate >= 60) return 'Average';
     if (completionRate >= 50) return 'Fair';
     return 'Needs Improvement';
-  }
-
-  // بيانات افتراضية في حالة فشل التحميل
-  Map<String, dynamic> _getDefaultAssignmentStats() {
-    return {
-      'total_assignments': 5,
-      'submitted_assignments': 2,
-      'not_submitted_assignments': 3,
-      'completion_rate': 40.0,
-      'grade': 'C-',
-      'status': 'Fair',
-      'pending_text': '3 of 5 tasks left',
-      'isOfflineMode': true,
-    };
   }
 
   // جلب كل بيانات الـ Dashboard مرة واحدة

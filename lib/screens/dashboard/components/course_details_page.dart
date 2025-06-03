@@ -5,6 +5,8 @@ import 'package:smart_lms/config/app_config.dart';
 import 'package:smart_lms/models/course.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../video/webview_video_player.dart';
+
 class CourseDetailsPage extends StatelessWidget {
   final Course course;
   final bool isEnrolled; // هل الطالب مشترك في الكورس أم لا
@@ -315,43 +317,17 @@ class CourseDetailsPage extends StatelessWidget {
     final String? youtubeUrl = _getCourseYoutubeUrl();
 
     if (youtubeUrl != null) {
-      print('🔗 Trying to open YouTube URL: $youtubeUrl');
+      print('🎥 Opening WebView video player for: ${course.displayTitle}');
 
-      try {
-        final Uri url = Uri.parse(youtubeUrl);
-
-        // جرب فتح في تطبيق يوتيوب الأول
-        bool launched = await launchUrl(
-          url,
-          mode: LaunchMode.externalApplication,
-        );
-
-        if (!launched) {
-          print('❌ Failed to launch in external app, trying in app...');
-
-          // إذا فشل، جرب فتح في المتصفح داخل التطبيق
-          launched = await launchUrl(
-            url,
-            mode: LaunchMode.inAppWebView,
-          );
-        }
-
-        if (!launched) {
-          print('❌ Failed to launch in app, trying platform default...');
-
-          // إذا فشل، جرب الطريقة الافتراضية
-          launched = await launchUrl(url);
-        }
-
-        if (!launched) {
-          throw Exception('Could not launch YouTube URL');
-        } else {
-          print('✅ YouTube URL launched successfully');
-        }
-      } catch (e) {
-        print('❌ Error launching YouTube: $e');
-        _showYouTubeErrorDialog(context, youtubeUrl);
-      }
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => WebViewVideoPlayer(
+            videoUrl: youtubeUrl,
+            course: course,
+          ),
+        ),
+      );
     } else {
       _showInfoDialog(context, 'Course content will be available soon'.tr());
     }

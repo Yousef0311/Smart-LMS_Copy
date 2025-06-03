@@ -1,4 +1,4 @@
-// lib/services/lectures_service.dart - Enhanced with offline support
+// lib/services/lectures_service.dart - Enhanced with default data
 import 'dart:convert';
 
 import 'package:shared_preferences/shared_preferences.dart';
@@ -10,19 +10,113 @@ class LecturesService {
   // Cache keys
   static const String _lecturesKey = 'cached_lectures';
   static const String _lecturesTimestampKey = 'lectures_cache_timestamp';
+  static const String _hasDefaultLecturesKey = 'has_default_lectures';
 
-  // جلب كل المحاضرات للمستخدم مع دعم offline
+  // 🔥 بيانات افتراضية للمحاضرات
+  static final Map<String, dynamic> _defaultLecturesData = {
+    'message': 'Demo lectures data',
+    'data': [
+      {
+        'id': 1,
+        'name': 'Flutter & Dart Development',
+        'contents': [
+          {
+            'id': 1,
+            'title': 'Introduction to Flutter',
+            'description': 'Getting started with Flutter framework',
+            'type': 'video',
+            'duration': 45,
+            'order': 1,
+            'is_free': 1,
+            'video_url': 'https://youtube.com/watch?v=demo1',
+            'content_progress': [
+              {'progress_percent': 100, 'is_completed': 1}
+            ]
+          },
+          {
+            'id': 2,
+            'title': 'Dart Programming Basics',
+            'description': 'Learning Dart programming language',
+            'type': 'video',
+            'duration': 60,
+            'order': 2,
+            'is_free': 1,
+            'video_url': 'https://youtube.com/watch?v=demo2',
+            'content_progress': [
+              {'progress_percent': 75, 'is_completed': 0}
+            ]
+          },
+          {
+            'id': 3,
+            'title': 'Flutter Widgets Deep Dive',
+            'description': 'Understanding Flutter widgets',
+            'type': 'video',
+            'duration': 90,
+            'order': 3,
+            'is_free': 0,
+            'video_url': 'https://youtube.com/watch?v=demo3',
+            'content_progress': []
+          }
+        ]
+      },
+      {
+        'id': 2,
+        'name': 'Advanced Networking',
+        'contents': [
+          {
+            'id': 4,
+            'title': 'Network Fundamentals',
+            'description': 'Basic networking concepts',
+            'type': 'video',
+            'duration': 50,
+            'order': 1,
+            'is_free': 1,
+            'video_url': 'https://youtube.com/watch?v=demo4',
+            'content_progress': [
+              {'progress_percent': 100, 'is_completed': 1}
+            ]
+          },
+          {
+            'id': 5,
+            'title': 'TCP/IP Protocol Suite',
+            'description': 'Understanding TCP/IP protocols',
+            'type': 'video',
+            'duration': 70,
+            'order': 2,
+            'is_free': 1,
+            'video_url': 'https://youtube.com/watch?v=demo5',
+            'content_progress': [
+              {'progress_percent': 30, 'is_completed': 0}
+            ]
+          },
+          {
+            'id': 6,
+            'title': 'Network Security',
+            'description': 'Security in computer networks',
+            'type': 'video',
+            'duration': 80,
+            'order': 3,
+            'is_free': 0,
+            'video_url': 'https://youtube.com/watch?v=demo6',
+            'content_progress': []
+          }
+        ]
+      }
+    ]
+  };
+
+  // جلب كل المحاضرات مع دعم offline محسن
   Future<Map<String, dynamic>> getAllLectures() async {
     try {
+      // جرب الـ API الأول
       final response = await _apiService.request('lecture', 'GET');
 
       if (response['message'] != null && response['data'] != null) {
-        print('✅ Lectures loaded successfully');
+        print('✅ Lectures loaded from API successfully');
         print('📚 Courses with lectures: ${response['data'].length}');
 
-        // 🔥 حفظ البيانات للـ offline mode
+        // حفظ البيانات للـ offline mode
         await _saveLecturesDataToCache(response);
-
         return response;
       }
 
@@ -30,7 +124,7 @@ class LecturesService {
     } catch (e) {
       print('❌ Error loading lectures from API: $e');
 
-      // 🔥 محاولة تحميل البيانات من Cache
+      // جرب البيانات المحفوظة
       final cachedData = await _loadCachedLecturesData();
       if (cachedData != null) {
         print('📱 Using cached lectures data (offline mode)');
@@ -41,11 +135,49 @@ class LecturesService {
         };
       }
 
-      rethrow;
+      // 🔥 استخدم البيانات الافتراضية
+      print('🎯 Using default lectures data for demo');
+      await _saveDefaultLecturesData();
+      return {
+        ..._defaultLecturesData,
+        'isOfflineMode': true,
+        'isDefaultData': true,
+        'message':
+            'Showing demo lectures - connect to internet for real content'
+      };
     }
   }
 
-  // حفظ بيانات المحاضرات للـ cache
+  // 🔥 حفظ البيانات الافتراضية للمحاضرات
+  Future<void> _saveDefaultLecturesData() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool(_hasDefaultLecturesKey, true);
+      await _saveLecturesDataToCache(_defaultLecturesData);
+      print('💾 Default lectures data saved successfully');
+    } catch (e) {
+      print('❌ Error saving default lectures data: $e');
+    }
+  }
+
+  // 🔥 إعداد البيانات الأولية للمحاضرات
+  Future<void> initializeDefaultLecturesData() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final hasData = prefs.containsKey(_lecturesKey);
+
+      if (!hasData) {
+        print('🚀 Initializing app with default lectures data');
+        await _saveDefaultLecturesData();
+      } else {
+        print('✅ App already has lectures data');
+      }
+    } catch (e) {
+      print('❌ Error initializing lectures data: $e');
+    }
+  }
+
+  // باقي الدوال...
   Future<void> _saveLecturesDataToCache(Map<String, dynamic> data) async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -60,7 +192,6 @@ class LecturesService {
     }
   }
 
-  // تحميل بيانات المحاضرات من Cache
   Future<Map<String, dynamic>?> _loadCachedLecturesData() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -68,18 +199,19 @@ class LecturesService {
       final lecturesJson = prefs.getString(_lecturesKey);
       final timestamp = prefs.getInt(_lecturesTimestampKey);
 
-      if (lecturesJson == null || timestamp == null) {
+      if (lecturesJson == null) {
         return null;
       }
 
-      // التحقق من صلاحية البيانات (7 أيام)
-      final now = DateTime.now().millisecondsSinceEpoch;
-      final cacheDuration = 7 * 24 * 60 * 60 * 1000;
+      // 🔥 خلي البيانات تشتغل حتى لو قديمة
+      if (timestamp != null) {
+        final now = DateTime.now().millisecondsSinceEpoch;
+        final ageHours = ((now - timestamp) / (1000 * 60 * 60)).round();
 
-      if (now - timestamp > cacheDuration) {
-        print('📅 Cached lectures data is expired');
-        await _clearLecturesCache();
-        return null;
+        if (ageHours > 168) {
+          // أسبوع
+          print('⚠️ Lectures data is ${ageHours}h old but still usable');
+        }
       }
 
       return jsonDecode(lecturesJson);
@@ -89,19 +221,7 @@ class LecturesService {
     }
   }
 
-  // مسح cache المحاضرات
-  Future<void> _clearLecturesCache() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.remove(_lecturesKey);
-      await prefs.remove(_lecturesTimestampKey);
-      print('🧹 Lectures cache cleared');
-    } catch (e) {
-      print('❌ Error clearing lectures cache: $e');
-    }
-  }
-
-  // تحديث progress المحاضرة (مع queue للـ offline)
+  // تحديث progress المحاضرة
   Future<Map<String, dynamic>> updateLectureProgress({
     required int courseContentId,
     required int progress,
@@ -121,7 +241,7 @@ class LecturesService {
     } catch (e) {
       print('❌ Error updating progress (will queue for later): $e');
 
-      // 🔥 حفظ التحديث في queue للمزامنة لاحقاً
+      // حفظ التحديث في queue للمزامنة لاحقاً
       await _queueProgressUpdate(courseContentId, progress);
 
       return {
@@ -132,33 +252,27 @@ class LecturesService {
     }
   }
 
-  // حفظ تحديثات التقدم في queue
   Future<void> _queueProgressUpdate(int courseContentId, int progress) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final queueKey = 'progress_queue';
 
-      // الحصول على Queue الحالي
       final queueJson = prefs.getString(queueKey) ?? '[]';
       final List<dynamic> queue = jsonDecode(queueJson);
 
-      // إضافة التحديث الجديد
       queue.add({
         'course_content_id': courseContentId,
         'progress': progress,
         'timestamp': DateTime.now().millisecondsSinceEpoch,
       });
 
-      // حفظ Queue المحدث
       await prefs.setString(queueKey, jsonEncode(queue));
-
       print('📝 Progress update queued for later sync');
     } catch (e) {
       print('❌ Error queuing progress update: $e');
     }
   }
 
-  // مزامنة التحديثات المعلقة (يتم استدعاؤها عند الاتصال بالإنترنت)
   Future<void> syncPendingUpdates() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -186,7 +300,6 @@ class LecturesService {
         }
       }
 
-      // مسح Queue بعد المزامنة
       await prefs.remove(queueKey);
       print('🔄 All pending updates synced');
     } catch (e) {
@@ -198,7 +311,6 @@ class LecturesService {
   Map<String, dynamic> processLecturesData(Map<String, dynamic> apiResponse) {
     final List<dynamic> coursesData = apiResponse['data'] as List;
 
-    // استخراج قائمة الكورسات
     List<String> courseNames = [];
     List<Map<String, dynamic>> allLectures = [];
 
@@ -206,14 +318,11 @@ class LecturesService {
       String courseName = courseData['name'] ?? 'Unknown Course';
       courseNames.add(courseName);
 
-      // تحويل محتويات الكورس إلى محاضرات
       List<dynamic> contents = courseData['contents'] ?? [];
 
       for (var content in contents) {
-        // تحديد حالة المحاضرة
         String status = _determineStatus(content);
 
-        // إنشاء محاضرة
         Map<String, dynamic> lecture = {
           'id': content['id'],
           'title': content['title'] ?? 'Unknown Lecture',
@@ -227,8 +336,8 @@ class LecturesService {
           'videoUrl': content['video_url'],
           'status': status,
           'progress': _getProgress(content),
-          'date': _generateDate(content['order']), // تاريخ وهمي مؤقت
-          'time': _generateTime(content['order']), // وقت وهمي مؤقت
+          'date': _generateDate(content['order']),
+          'time': _generateTime(content['order']),
           'number': content['order'].toString(),
         };
 
@@ -243,12 +352,11 @@ class LecturesService {
     };
   }
 
-  // تحديد حالة المحاضرة بناءً على التقدم
   String _determineStatus(Map<String, dynamic> content) {
     List<dynamic> progressList = content['content_progress'] ?? [];
 
     if (progressList.isEmpty) {
-      return 'upcoming'; // لم يبدأ بعد
+      return 'upcoming';
     }
 
     var progress = progressList.first;
@@ -256,18 +364,16 @@ class LecturesService {
     int progressPercent = progress['progress_percent'] ?? 0;
 
     if (isCompleted) {
-      return 'attended'; // مكتمل
+      return 'attended';
     } else if (progressPercent > 70) {
-      return 'attended'; // تقريباً مكتمل
+      return 'attended';
     } else if (progressPercent > 0) {
-      return 'upcoming'; // بدأ لكن لم يكتمل
+      return 'upcoming';
     } else {
-      // فحص إذا كان التاريخ فات (logic مؤقت)
       return 'upcoming';
     }
   }
 
-  // الحصول على نسبة التقدم
   double _getProgress(Map<String, dynamic> content) {
     List<dynamic> progressList = content['content_progress'] ?? [];
 
@@ -280,20 +386,17 @@ class LecturesService {
     return progressPercent / 100.0;
   }
 
-  // إنتاج تاريخ وهمي (مؤقت - يمكن تحسينه لاحقاً)
   String _generateDate(int order) {
     DateTime now = DateTime.now();
     DateTime lectureDate = now.subtract(Duration(days: (10 - order).abs()));
     return '${lectureDate.day.toString().padLeft(2, '0')}/${lectureDate.month.toString().padLeft(2, '0')}/${lectureDate.year}';
   }
 
-  // إنتاج وقت وهمي (مؤقت)
   String _generateTime(int order) {
     List<String> times = ['08:00', '10:00', '12:00', '14:00', '16:00'];
     return times[order % times.length];
   }
 
-  // حساب التقدم لكل كورس
   Map<String, double> calculateProgressPerCourse(
       List<Map<String, dynamic>> lectures) {
     Map<String, int> totalLectures = {};

@@ -1,7 +1,10 @@
 import 'package:easy_localization/easy_localization.dart';
-import 'package:flutter/foundation.dart'; // 🔴 اضيف ده
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:smart_lms/screens/splash_screen.dart';
+import 'package:smart_lms/services/courses_service.dart';
+import 'package:smart_lms/services/dashboard_service.dart';
+import 'package:smart_lms/services/lectures_service.dart';
 import 'package:smart_lms/themes/dark_theme.dart';
 import 'package:smart_lms/themes/light_theme.dart';
 import 'package:smart_lms/utils/connectivity_helper.dart';
@@ -12,17 +15,18 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await EasyLocalization.ensureInitialized();
 
-  // 🔴 امسح السطر ده:
-  // AppConfig.setEnvironment(Environment.development);
-
-  // 🔴 واستبدله بده:
+  // 🔥 إعداد البيئة تلقائياً
   _setupEnvironmentAutomatically();
 
-  // 🔴 اضيف ده للتحقق:
+  // التحقق من صحة الإعدادات
   if (!AppConfig.validateConfig()) {
     print('⚠️ خطأ في إعدادات التطبيق');
   }
-// 🔥 إعداد مراقب الاتصال بالإنترنت
+
+  // 🔥 إعداد البيانات الأولية للـ offline mode
+  await _initializeOfflineData();
+
+  // إعداد مراقب الاتصال بالإنترنت
   ConnectivityHelper.setupGlobalConnectivityListener();
   print('📡 Connectivity monitoring started');
 
@@ -39,17 +43,37 @@ void main() async {
   );
 }
 
-// 🔴 اضيف الدالة دي في الآخر
+// 🔥 دالة جديدة لإعداد البيانات الأولية
+Future<void> _initializeOfflineData() async {
+  try {
+    print('🚀 Initializing offline data...');
+
+    // إنشاء instances من الـ services
+    final coursesService = CoursesService();
+    final dashboardService = DashboardService();
+    final lecturesService = LecturesService();
+
+    // إعداد البيانات الافتراضية (بدون انتظار)
+    await Future.wait([
+      coursesService.initializeDefaultData(),
+      dashboardService.initializeDefaultAssignmentData(),
+      lecturesService.initializeDefaultLecturesData(),
+    ]);
+
+    print('✅ Offline data initialization completed');
+  } catch (e) {
+    print('❌ Error initializing offline data: $e');
+    // لا نوقف التطبيق، فقط نسجل الخطأ
+  }
+}
+
 void _setupEnvironmentAutomatically() {
   if (kIsWeb) {
-    // إذا كان يعمل على الويب
     AppConfig.setupForWeb();
     print('🌐 تم إعداد التطبيق للويب تلقائياً');
     print('🔗 API URL: ${AppConfig.apiBaseUrl}');
   } else {
-    // إذا كان يعمل على موبايل
-    AppConfig
-        .setupForMobile(); // 🔥 هيستدعي setupForMobile ويستخدم 192.168.1.19
+    AppConfig.setupForMobile();
     print('📱 تم إعداد التطبيق للموبايل تلقائياً');
     print('📍 IP الموبايل المستخدم: 192.168.1.3');
     print('🔗 API URL: ${AppConfig.apiBaseUrl}');

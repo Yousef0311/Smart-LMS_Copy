@@ -45,7 +45,7 @@ dependencies:
   flutter_launcher_icons: ^0.13.1
   url_launcher: ^6.2.2
   connectivity_plus: ^6.0.5  # offline mode
-  youtube_player_flutter: ^9.1.1
+  webview_flutter: ^4.4.2
 
 
   # The following adds the Cupertino Icons font to your application.
